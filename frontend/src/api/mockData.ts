@@ -147,11 +147,11 @@ export function getMockResponse(url: string, method: string = 'get'): any {
     return [
       {
         id: 'host-laptop-01',
-        hostname: 'PHYSICAL-LAPTOP-01',
-        display_label: 'Host Laptop (Pradnyan PC)',
+        hostname: 'ASUS VivoBook (Primary Physical Node)',
+        display_label: 'Physical Hardware ➔ AWS Cloud Connected (ap-south-1)',
         os_version: 'Windows 11 Pro (Physical Bare-Metal)',
         agent_platform: 'windows',
-        ip_address: '192.168.1.101',
+        ip_address: 'Uplink: AWS Cloud (13.126.201.190)',
         status: 'online',
         is_physical: true,
         cpu: 28,
@@ -223,9 +223,9 @@ export function getMockResponse(url: string, method: string = 'get'): any {
       },
       {
         id: 'host-cloud-01',
-        hostname: 'GCP-VM-EU-02',
-        display_label: 'Google Cloud Central Gateway',
-        os_version: 'Windows Server 2022 (Google Cloud)',
+        hostname: 'AWS-EC2-SOUTH-01',
+        display_label: 'AWS Cloud Central Gateway',
+        os_version: 'Ubuntu 24.04 LTS (AWS EC2 ap-south-1)',
         agent_platform: 'windows',
         ip_address: '100.64.0.15',
         status: 'online',
@@ -248,7 +248,7 @@ export function getMockResponse(url: string, method: string = 'get'): any {
     const isPhysicalLaptop2 = cleanUrl.includes('host-laptop-02');
     const isPhysicalLaptop3 = cleanUrl.includes('host-laptop-03');
     const isPhysicalLaptop4 = cleanUrl.includes('host-laptop-04');
-    const isCloudNode = cleanUrl.includes('host-cloud-01') || cleanUrl.includes('host-gcp-02');
+    const isCloudNode = cleanUrl.includes('host-cloud-01') || cleanUrl.includes('host-aws-02');
 
     let baseCpu = 28;
     let baseMem = 58;
@@ -305,7 +305,7 @@ export function getMockResponse(url: string, method: string = 'get'): any {
       baseDisk = 68;
       baseConns = 450;
       topProcesses = [
-        { name: 'gcp-vpc-ingress-proxy', pid: 2040, cpu_percent: 38.6 },
+        { name: 'aws-vpc-ingress-proxy', pid: 2040, cpu_percent: 38.6 },
         { name: 'cloud-armor-rate-limiter', pid: 2042, cpu_percent: 19.4 },
         { name: 'postgres', pid: 1420, cpu_percent: 8.9 },
         { name: 'System', pid: 4, cpu_percent: 5.2 },
@@ -400,7 +400,7 @@ export function getMockResponse(url: string, method: string = 'get'): any {
       {
         id: 'det-005',
         host_id: 'host-cloud-01',
-        hostname: 'GCP-VM-EU-02',
+        hostname: 'AWS-EC2-SOUTH-01',
         ts: new Date(Date.now() - 1000 * 60 * 35).toISOString(),
         anomaly_score: 0.985,
         is_attack: true,
@@ -409,7 +409,7 @@ export function getMockResponse(url: string, method: string = 'get'): any {
         mitre_technique: 'T1498.001',
         mitre_tactic: 'Impact',
         status: 'mitigated',
-        details: { pps: 94000, protocol: 'TCP SYN', target: 'GCP-VM-EU-02 / GCP-VPC' },
+        details: { pps: 94000, protocol: 'TCP SYN', target: 'AWS-EC2-SOUTH-01 / AWS-VPC' },
       },
     ];
   }
@@ -469,7 +469,7 @@ export function getMockResponse(url: string, method: string = 'get'): any {
       {
         id: 'inc-001',
         incident_id: 'inc-001',
-        title: 'Volumetric TCP SYN Flood Attack on Google Cloud VPC',
+        title: 'Volumetric TCP SYN Flood Attack on AWS VPC',
         severity: 'critical',
         status: 'awaiting_approval',
         source: 'live',
@@ -477,7 +477,7 @@ export function getMockResponse(url: string, method: string = 'get'): any {
         tier1_confidence: 0.985,
         tier2_technique: 'T1498.001 (Direct Network Flood)',
         tier2_confidence: 0.972,
-        target_asset: 'GCP-VM-EU-02 (Google Cloud VPC Gateway)',
+        target_asset: 'AWS-EC2-SOUTH-01 (AWS VPC Gateway)',
         description: 'Over 94,000 SYN packets/sec detected assaulting cloud load balancer from distributed adversary botnet.',
         features: {
           cpu: 82.4,
@@ -497,7 +497,7 @@ export function getMockResponse(url: string, method: string = 'get'): any {
           summary: 'Inbound packet rate surged to 94,000 pkts/s (783x baseline), indicating a coordinated volumetric TCP SYN flood targeting cloud ingress proxies.',
           probable_root_cause: 'Distributed adversary botnet coordinating amplified reflection traffic to overwhelm TCP state tables.',
           evidence: [
-            'inbound_traffic surged to 94,000 pkts/s (783.3x baseline) on GCP VPC gateway.',
+            'inbound_traffic surged to 94,000 pkts/s (783.3x baseline) on AWS VPC gateway.',
             'active_connections escalated to 380 (15.2x baseline) with half-open handshakes.',
             'Host CPU rose to 82.4% under packet interrupt and network driver pressure.',
           ],
@@ -506,17 +506,17 @@ export function getMockResponse(url: string, method: string = 'get'): any {
             'Unscheduled organic traffic surge (flash crowd) following marketing announcement',
             'Upstream ISP routing anomaly or BGP route leak reflecting legitimate traffic',
           ],
-          uncertainty_note: 'Probabilistic hypothesis grounded in Google Cloud VPC Flow Logs and Cloud Monitoring edge probes.',
+          uncertainty_note: 'Probabilistic hypothesis grounded in AWS VPC Flow Logs and Cloud Monitoring edge probes.',
         },
         recommended_actions: [
           {
-            action_id: 'ACT_GCP_ARMOR_RATE_LIMIT',
-            name: 'Google Cloud Armor Edge Rate-Limiting',
-            description: 'Deploy rate-based ban rule on Google Cloud Armor security policy at global edge for 3600s',
-            scope: 'GCP-VM-EU-02 (VPC Ingress Gateway)',
+            action_id: 'ACT_AWS_ARMOR_RATE_LIMIT',
+            name: 'AWS WAF Edge Rate-Limiting',
+            description: 'Deploy rate-based ban rule on AWS WAF security policy at global edge for 3600s',
+            scope: 'AWS-EC2-SOUTH-01 (VPC Ingress Gateway)',
             risk_level: 'low',
             reversible: true,
-            rollback_steps: 'Delete rate-limit rule from Cloud Armor policy',
+            rollback_steps: 'Delete rate-limit rule from AWS WAF policy',
             expected_outcome: 'Attacking botnet packets dropped at Google edge POPs before entering VPC network',
           },
         ],
@@ -683,7 +683,7 @@ export function getMockResponse(url: string, method: string = 'get'): any {
       {
         id: 'inc-004',
         incident_id: 'inc-004',
-        title: 'GCP IAM Project Owner Role Privilege Escalation',
+        title: 'AWS IAM Project Owner Role Privilege Escalation',
         severity: 'critical',
         status: 'rejected',
         source: 'simulated',
@@ -691,7 +691,7 @@ export function getMockResponse(url: string, method: string = 'get'): any {
         tier1_confidence: 0.980,
         tier2_technique: 'T1098 (Account Manipulation)',
         tier2_confidence: 0.950,
-        target_asset: 'GCP Project: adaptive-learning-ml (IAM Service Account)',
+        target_asset: 'AWS Region: ap-south-1 (Instance: i-098c54730ff60bf4a) (IAM Service Account)',
         description: 'Compromised service account attempted unauthorized role self-assignment to roles/owner via Cloud API.',
         features: {
           cpu: 20.0,
@@ -708,10 +708,10 @@ export function getMockResponse(url: string, method: string = 'get'): any {
           },
         },
         rca: {
-          summary: 'Google Cloud Audit Log recorded SetIamPolicy API call attempting to grant roles/owner to dev-builder service account from untrusted IP.',
+          summary: 'AWS CloudTrail Log recorded SetIamPolicy API call attempting to grant roles/owner to dev-builder service account from untrusted IP.',
           probable_root_cause: 'Compromised service account private key used from unauthorized network location attempting privilege self-escalation.',
           evidence: [
-            'GCP Audit Log: SetIamPolicy called with member: serviceAccount:dev-builder@adaptive-learning-ml.iam.gserviceaccount.com.',
+            'AWS CloudTrail Log: SetIamPolicy called with member: serviceAccount:dev-builder@adaptive-learning-ml.iam.gserviceaccount.com.',
             'Request originated from non-corporate foreign IP 34.122.45.18.',
           ],
           confidence: 0.980,
@@ -719,18 +719,18 @@ export function getMockResponse(url: string, method: string = 'get'): any {
             'Terraform / Infrastructure-as-Code pipeline deploying scheduled IAM role updates',
             'Authorized cloud security architect executing disaster recovery role restructuring',
           ],
-          uncertainty_note: 'Verified from Google Cloud Audit Logs (Admin Activity stream).',
+          uncertainty_note: 'Verified from AWS CloudTrail Logs (Admin Activity stream).',
         },
         recommended_actions: [
           {
             action_id: 'ACT_REVOKE_SA_KEY',
             name: 'Revoke Compromised Service Account Key',
             description: 'Permanently delete service account key 8f492b1a8c9e and revert unauthorized IAM role binding',
-            scope: 'GCP Project: adaptive-learning-ml (Cloud IAM)',
+            scope: 'AWS Region: ap-south-1 (Instance: i-098c54730ff60bf4a) (Cloud IAM)',
             risk_level: 'high',
             reversible: false,
             rollback_steps: 'Generate replacement credential key and re-provision to authorized workloads',
-            expected_outcome: 'Adversary immediately loses all administrative access to Google Cloud project',
+            expected_outcome: 'Adversary immediately loses all administrative access to Amazon Web Services (AWS) project',
           },
         ],
         approval: {
@@ -1012,7 +1012,7 @@ export function getMockResponse(url: string, method: string = 'get'): any {
           {
             action_id: 'ACT_WAF_INJECT_RULE',
             name: 'Deploy Web Application Firewall Rule',
-            description: 'Inject Cloud Armor SQLi filter rule and block client IP session',
+            description: 'Inject AWS WAF SQLi filter rule and block client IP session',
             scope: 'DATASET-WORKSTATION-88 (Web Ingress)',
             risk_level: 'low',
             reversible: true,
@@ -1073,8 +1073,8 @@ export function getMockResponse(url: string, method: string = 'get'): any {
         recommended_actions: [
           {
             action_id: 'ACT_WAF_INJECT_RULE',
-            name: 'Cloud Armor Log4Shell Mitigation Rule',
-            description: 'Deploy Cloud Armor preconfigured WAF rule cve-can-2021-44228 and block outbound LDAP/RMI',
+            name: 'AWS WAF Log4Shell Mitigation Rule',
+            description: 'Deploy AWS WAF preconfigured WAF rule cve-can-2021-44228 and block outbound LDAP/RMI',
             scope: 'DATASET-WORKSTATION-111 (Application Gateway)',
             risk_level: 'high',
             reversible: true,
@@ -1229,7 +1229,7 @@ export function getMockResponse(url: string, method: string = 'get'): any {
         tier1_confidence: 0.988,
         tier2_technique: 'T1530 (Data from Cloud Storage Object)',
         tier2_confidence: 0.980,
-        target_asset: 'gs://adaptive-customer-records (Cloud Storage)',
+        target_asset: 's3://adaptive-customer-records (Cloud Storage)',
         description: 'Replayed from Cloud Audit Logs: bucket ACL changed to allUsers read, triggering rapid object downloads.',
         features: {
           cpu: 18.0,
@@ -1249,7 +1249,7 @@ export function getMockResponse(url: string, method: string = 'get'): any {
           summary: 'Audit telemetry shows bucket permissions modified to public read, resulting in external mass download.',
           probable_root_cause: 'Storage bucket permissions inadvertently changed to allUsers / public read.',
           evidence: [
-            'GCP Audit Log: SetBucketIamPolicy with allUsers member binding.',
+            'AWS CloudTrail Log: SetBucketIamPolicy with allUsers member binding.',
             'Outbound egress spike reaching 3,200 requests/sec from unknown external IP ranges.',
           ],
           confidence: 0.988,
@@ -1261,7 +1261,7 @@ export function getMockResponse(url: string, method: string = 'get'): any {
             action_id: 'ACT_FREEZE_BUCKET_EGRESS',
             name: 'Enforce Uniform Bucket Access & Freeze Egress',
             description: 'Enable Uniform Bucket-Level Access and temporarily halt public egress transfers',
-            scope: 'gs://adaptive-customer-records',
+            scope: 's3://adaptive-customer-records',
             risk_level: 'high',
             reversible: true,
             rollback_steps: 'Restore previous bucket ACLs and remove transfer freeze',
@@ -1353,7 +1353,7 @@ export function getMockResponse(url: string, method: string = 'get'): any {
         tier1_confidence: 0.978,
         tier2_technique: 'T1537 (Transfer Data to Cloud Account)',
         tier2_confidence: 0.965,
-        target_asset: 'gs://adaptive-secure-backups (Google Cloud Storage)',
+        target_asset: 's3://adaptive-secure-backups (Amazon S3)',
         description: 'Compromised API key streaming 42.4 GB of database backup objects to unauthorized external ASN at 180 MB/s.',
         features: {
           cpu: 24.0,
@@ -1370,25 +1370,25 @@ export function getMockResponse(url: string, method: string = 'get'): any {
           },
         },
         rca: {
-          summary: 'Abnormal data download burst detected on storage bucket gs://adaptive-secure-backups departing sharply from baseline (353x daily volume).',
+          summary: 'Abnormal data download burst detected on storage bucket s3://adaptive-secure-backups departing sharply from baseline (353x daily volume).',
           probable_root_cause: 'Compromised storage access token or leaked pre-signed URL attempting bulk data exfiltration.',
           evidence: [
             'Egress bandwidth reached 180 MB/s transferring encrypted database snapshots.',
-            'Target bucket: gs://adaptive-secure-backups accessed from foreign ASN 100.64.0.15.',
+            'Target bucket: s3://adaptive-secure-backups accessed from foreign ASN 100.64.0.15.',
           ],
           confidence: 0.978,
           alternative_hypotheses: [
             'Authorized secondary disaster recovery regional backup replication',
             'BigQuery data warehouse loading training data partitions',
           ],
-          uncertainty_note: 'Verified from Google Cloud Storage Access Logs and VPC Flow egress probes.',
+          uncertainty_note: 'Verified from Amazon S3 Access Logs and VPC Flow egress probes.',
         },
         recommended_actions: [
           {
             action_id: 'ACT_FREEZE_BUCKET_EGRESS',
             name: 'Enforce Uniform Bucket Access & Freeze Egress',
-            description: 'Enforce Uniform Bucket-Level Access on gs://adaptive-secure-backups and halt external downloads',
-            scope: 'gs://adaptive-secure-backups (GCS)',
+            description: 'Enforce Uniform Bucket-Level Access on s3://adaptive-secure-backups and halt external downloads',
+            scope: 's3://adaptive-secure-backups (GCS)',
             risk_level: 'high',
             reversible: true,
             rollback_steps: 'Restore prior bucket ACL configuration and re-enable public egress',
@@ -1404,7 +1404,7 @@ export function getMockResponse(url: string, method: string = 'get'): any {
         execution_log: [
           {
             action_id: 'ACT_FREEZE_BUCKET_EGRESS',
-            command: 'gcloud storage buckets update gs://adaptive-secure-backups --uniform-bucket-level-access',
+            command: 'aws s3api put-public-access-block --bucket adaptive-secure-backups --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true',
             dry_run: true,
             status: 'simulated',
             result: 'Uniform bucket access enforced in 510ms',
@@ -1498,46 +1498,46 @@ export function getMockResponse(url: string, method: string = 'get'): any {
       'inc-001': {
         id: 'rca-001',
         incident_id: 'inc-001',
-        title: 'Volumetric TCP SYN Flood Attack on Google Cloud VPC',
+        title: 'Volumetric TCP SYN Flood Attack on AWS VPC',
         mitre_technique: 'T1498.001 (Direct Network Flood)',
-        target_asset: 'GCP-VM-EU-02 (Google Cloud VPC Gateway)',
-        probable_cause: 'Adversary botnet coordinated a distributed TCP SYN flood against Google Cloud VPC ingress load balancers with 94,000 pps, attempting to saturate connection state tables.',
+        target_asset: 'AWS-EC2-SOUTH-01 (AWS VPC Gateway)',
+        probable_cause: 'Adversary botnet coordinated a distributed TCP SYN flood against AWS VPC ingress load balancers with 94,000 pps, attempting to saturate connection state tables.',
         confidence: 0.985,
         source_ips: [
           { ip: '198.51.100.45', count: 48200, country: 'External Botnet Node', city: 'Frankfurt, DE' },
           { ip: '203.0.113.88', count: 45800, country: 'External Botnet Node', city: 'Moscow, RU' },
         ],
-        affected_hosts: ['GCP-VM-EU-02', 'gcp-vpc-ingress-proxy'],
+        affected_hosts: ['AWS-EC2-SOUTH-01', 'aws-vpc-ingress-proxy'],
         evidence: {
           flow_pps: 94000,
           protocol: 'TCP SYN',
           baseline_pps: 450,
           anomalous_ratio: '208x baseline',
-          cloud_sensor: 'GCP VPC Flow Logs',
+          cloud_sensor: 'AWS VPC Flow Logs',
         },
         timeline: [
-          { ts: new Date(Date.now() - 1000 * 60 * 16).toISOString(), type: 'NETWORK_PROBE', description: 'SYN Scan probe detected on VPC edge', source: 'GCP VPC Flow Logs' },
+          { ts: new Date(Date.now() - 1000 * 60 * 16).toISOString(), type: 'NETWORK_PROBE', description: 'SYN Scan probe detected on VPC edge', source: 'AWS VPC Flow Logs' },
           { ts: new Date(Date.now() - 1000 * 60 * 15).toISOString(), type: 'VOLUMETRIC_SPIKE', description: 'Inbound packet rate surged to 94,000 pps', source: 'Cloud Monitoring' },
           { ts: new Date(Date.now() - 1000 * 60 * 15).toISOString(), type: 'ML_CLASSIFICATION', description: 'XGBoost classified T1498.001 with 98.5% confidence', source: 'Adaptive Threat Engine' },
-          { ts: new Date(Date.now() - 1000 * 60 * 15 + 380).toISOString(), type: 'SELF_HEALING_DISPATCH', description: 'Injected Google Cloud Armor edge rate-limiting policy', source: 'Self-Healing Engine' },
+          { ts: new Date(Date.now() - 1000 * 60 * 15 + 380).toISOString(), type: 'SELF_HEALING_DISPATCH', description: 'Injected AWS WAF edge rate-limiting policy', source: 'Self-Healing Engine' },
           { ts: new Date(Date.now() - 1000 * 60 * 14).toISOString(), type: 'VERIFICATION_PASSED', description: 'Inbound traffic dropped to 110 pps; health check confirmed', source: 'Verification Watchdog' },
         ],
         self_healing: {
           playbook_id: 'PB_CLOUD_ARMOR_RATE_LIMIT',
-          playbook_name: 'GCP Cloud Armor Edge Rate-Limiting & VPC Ingress Null-Route',
+          playbook_name: 'AWS AWS WAF Edge Rate-Limiting & VPC Ingress Null-Route',
           status: 'healed',
           duration_ms: 380,
-          target_layer: 'gcp_vpc',
+          target_layer: 'aws_vpc',
           actions_dispatched: [
             {
-              type: 'gcp_armor_security_policy',
-              command: 'gcloud compute security-policies rules create 1000 --security-policy=cloud-armor-adaptive-waf --src-ip-ranges=198.51.100.0/24,203.0.113.0/24 --action=rate-based-ban --rate-limit-threshold-count=100 --ban-duration-sec=3600',
+              type: 'aws_waf_security_policy',
+              command: 'aws wafv2 update-web-acl --name adaptivecloud-rate-limit --scope REGIONAL --default-action Block={}',
               result: 'Rule priority 1000 created and propagated across Google global edge in 380ms',
               status: 'verified',
             },
             {
               type: 'vpc_firewall_drop',
-              command: 'gcloud compute firewall-rules create deny-ddos-botnet --action=DENY --rules=tcp:80,tcp:443 --source-ranges=198.51.100.45/32',
+              command: 'aws ec2 authorize-security-group-ingress --group-id sg-028ebbd83cf143b23 --protocol tcp --port 80 --cidr 198.51.100.45/32',
               result: 'Firewall drop rule applied to VPC network default',
               status: 'verified',
             },
@@ -1553,10 +1553,10 @@ export function getMockResponse(url: string, method: string = 'get'): any {
         },
         recommended_actions: [
           'Enforce Cloud CDN caching at edge to absorb static traffic loads',
-          'Configure Google Cloud Armor Adaptive Protection ML model',
-          'Deploy regional Cloud Load Balancers across multiple GCP regions',
+          'Configure AWS WAF Adaptive Protection ML model',
+          'Deploy regional Cloud Load Balancers across multiple AWS regions',
         ],
-        plain_english_summary: 'A massive botnet attempted to flood our Google Cloud server with 94,000 packets per second to take the system offline. Within 380 milliseconds, AdaptiveCloud autonomously called Google Cloud Armor APIs, rate-limited the attacker at Google’s global edge, and normalized traffic with zero downtime.',
+        plain_english_summary: 'A massive botnet attempted to flood our Amazon Web Services (AWS) server with 94,000 packets per second to take the system offline. Within 380 milliseconds, AdaptiveCloud autonomously called AWS WAF APIs, rate-limited the attacker at Google’s global edge, and normalized traffic with zero downtime.',
         created_at: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
         updated_at: new Date().toISOString(),
       },
@@ -1693,9 +1693,9 @@ export function getMockResponse(url: string, method: string = 'get'): any {
       'inc-004': {
         id: 'rca-004',
         incident_id: 'inc-004',
-        title: 'GCP IAM Project Owner Role Privilege Escalation',
+        title: 'AWS IAM Project Owner Role Privilege Escalation',
         mitre_technique: 'T1098 (Account Manipulation)',
-        target_asset: 'GCP Project: adaptive-learning-ml (IAM Service Account)',
+        target_asset: 'AWS Region: ap-south-1 (Instance: i-098c54730ff60bf4a) (IAM Service Account)',
         probable_cause: 'Compromised service account key used from untrusted IP attempted self-assignment of roles/owner permissions via Cloud Resource Manager API.',
         confidence: 0.964,
         source_ips: [
@@ -1706,31 +1706,31 @@ export function getMockResponse(url: string, method: string = 'get'): any {
           target_account: 'dev-builder@adaptive-learning-ml.iam.gserviceaccount.com',
           role_requested: 'roles/owner',
           method_name: 'SetIamPolicy',
-          audit_source: 'GCP Cloud Audit Logs (Admin Activity)',
+          audit_source: 'AWS CloudTrail Logs (Admin Activity)',
         },
         timeline: [
-          { ts: new Date(Date.now() - 1000 * 60 * 61).toISOString(), type: 'AUTH_TOKEN_USED', description: 'Service account used from untrusted IP 34.122.45.18', source: 'GCP Audit Logs' },
-          { ts: new Date(Date.now() - 1000 * 60 * 60).toISOString(), type: 'POLICY_MUTATION', description: 'Attempted SetIamPolicy call to grant roles/owner', source: 'GCP Audit Logs' },
+          { ts: new Date(Date.now() - 1000 * 60 * 61).toISOString(), type: 'AUTH_TOKEN_USED', description: 'Service account used from untrusted IP 34.122.45.18', source: 'AWS CloudTrail Logs' },
+          { ts: new Date(Date.now() - 1000 * 60 * 60).toISOString(), type: 'POLICY_MUTATION', description: 'Attempted SetIamPolicy call to grant roles/owner', source: 'AWS CloudTrail Logs' },
           { ts: new Date(Date.now() - 1000 * 60 * 60).toISOString(), type: 'ML_CLASSIFICATION', description: 'Classified T1098 with 96.4% confidence', source: 'Adaptive Threat Engine' },
           { ts: new Date(Date.now() - 1000 * 60 * 60 + 240).toISOString(), type: 'SELF_HEALING_DISPATCH', description: 'Revoked compromised Service Account key via IAM API', source: 'Self-Healing Engine' },
           { ts: new Date(Date.now() - 1000 * 60 * 59).toISOString(), type: 'VERIFICATION_PASSED', description: 'OAuth access token invalidated; unauthorized key deleted', source: 'Verification Watchdog' },
         ],
         self_healing: {
           playbook_id: 'PB_REVOKE_SA_KEY_IMMEDIATE',
-          playbook_name: 'GCP IAM Key Revocation & Role Lockdown',
+          playbook_name: 'AWS IAM Key Revocation & Role Lockdown',
           status: 'healed',
           duration_ms: 240,
-          target_layer: 'gcp_iam',
+          target_layer: 'aws_iam',
           actions_dispatched: [
             {
-              type: 'gcp_iam_key_delete',
-              command: 'gcloud iam service-accounts keys delete 8f492b1a8c9e --iam-account=dev-builder@adaptive-learning-ml.iam.gserviceaccount.com --quiet',
-              result: 'Compromised Service Account key permanently deleted from GCP IAM',
+              type: 'aws_iam_key_delete',
+              command: 'aws iam delete-access-key --user-name dev-builder --access-key-id AKIAIOSFODNN7EXAMPLE',
+              result: 'Compromised Service Account key permanently deleted from AWS IAM',
               status: 'verified',
             },
             {
               type: 'iam_policy_revert',
-              command: 'gcloud projects remove-iam-policy-binding adaptive-learning-ml --member="serviceAccount:dev-builder@adaptive-learning-ml.iam.gserviceaccount.com" --role="roles/owner"',
+              command: 'aws iam detach-user-policy --user-name dev-builder --policy-arn arn:aws:iam::aws:policy/AdministratorAccess',
               result: 'Unauthorized role binding removed; permissions restored to least-privilege',
               status: 'verified',
             },
@@ -1746,10 +1746,10 @@ export function getMockResponse(url: string, method: string = 'get'): any {
         },
         recommended_actions: [
           'Enforce Workload Identity Federation instead of static service account JSON keys',
-          'Deploy GCP Organization Policy constraint: iam.disableServiceAccountKeyCreation',
-          'Enable Google Cloud Privileged Access Manager (PAM)',
+          'Deploy AWS Organization Policy constraint: iam.disableServiceAccountKeyCreation',
+          'Enable Amazon Web Services (AWS) Privileged Access Manager (PAM)',
         ],
-        plain_english_summary: 'A hacker compromised a developer key and attempted to grant themselves Owner access over your entire Google Cloud project. AdaptiveCloud caught the illegal permission change, revoked the stolen key in 240 milliseconds, and locked the hacker out permanently.',
+        plain_english_summary: 'A hacker compromised a developer key and attempted to grant themselves Owner access over your entire Amazon Web Services (AWS) project. AdaptiveCloud caught the illegal permission change, revoked the stolen key in 240 milliseconds, and locked the hacker out permanently.',
         created_at: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
         updated_at: new Date().toISOString(),
       },
@@ -1866,11 +1866,11 @@ export function getMockResponse(url: string, method: string = 'get'): any {
         incident_id: 'inc-007',
         title: 'Mass GCS Storage Bucket Data Egress Exfiltration',
         mitre_technique: 'T1537 (Transfer Data to Cloud Account)',
-        target_asset: 'Google Cloud Storage (gs://adaptive-secure-backups)',
+        target_asset: 'Amazon S3 (s3://adaptive-secure-backups)',
         probable_cause: 'Compromised API key initiated sequential high-speed GET requests attempting to download 42 GB of encrypted database backups to an unauthorized external ASN.',
         confidence: 0.978,
         source_ips: [{ ip: '100.64.0.15', count: 1420, country: 'Exfiltration Proxy', city: 'London, UK' }],
-        affected_hosts: ['gs://adaptive-secure-backups'],
+        affected_hosts: ['s3://adaptive-secure-backups'],
         evidence: {
           egress_volume: '42.4 GB',
           baseline_egress: '120 MB/day',
@@ -1886,11 +1886,11 @@ export function getMockResponse(url: string, method: string = 'get'): any {
           playbook_name: 'GCS Uniform Bucket Freeze & Egress Lockdown',
           status: 'healed',
           duration_ms: 510,
-          target_layer: 'gcp_storage',
+          target_layer: 'aws_s3',
           actions_dispatched: [
             {
               type: 'gcs_bucket_lockdown',
-              command: 'gcloud storage buckets update gs://adaptive-secure-backups --uniform-bucket-level-access --clear-public-access-prevention',
+              command: 'aws s3api put-public-access-block --bucket adaptive-secure-backups --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true --clear-public-access-prevention',
               result: 'Bucket set to strict IAM uniform access; public and unauthorized tokens locked out',
               status: 'verified',
             },
@@ -1906,9 +1906,9 @@ export function getMockResponse(url: string, method: string = 'get'): any {
         },
         recommended_actions: [
           'Enforce VPC Service Controls (VPC-SC) perimeter around GCS buckets',
-          'Deploy Google Cloud DLP (Data Loss Prevention) inspect templates',
+          'Deploy Amazon Web Services (AWS) DLP (Data Loss Prevention) inspect templates',
         ],
-        plain_english_summary: 'An attacker tried to steal 42 GB of database backups from our Google Cloud Storage bucket. AdaptiveCloud detected the abnormal egress burst, immediately locked down the bucket access in 510ms, and stopped the data breach.',
+        plain_english_summary: 'An attacker tried to steal 42 GB of database backups from our Amazon S3 bucket. AdaptiveCloud detected the abnormal egress burst, immediately locked down the bucket access in 510ms, and stopped the data breach.',
         created_at: new Date(Date.now() - 1000 * 60 * 180).toISOString(),
         updated_at: new Date().toISOString(),
       },
@@ -1993,7 +1993,7 @@ export function getMockResponse(url: string, method: string = 'get'): any {
           actions_dispatched: [
             {
               type: 'waf_rule_inject',
-              command: 'gcloud compute security-policies rules create 2000 --expression="evaluatePreconfiguredExpr(\'sqli-v33-stable\')" --action=deny-403',
+              command: 'aws wafv2 update-web-acl --name adaptivecloud-waf --scope REGIONAL --rules file://sqli-rule.json',
               result: 'Edge WAF signature filter queued for deployment',
               status: 'simulated',
             },
@@ -2009,9 +2009,9 @@ export function getMockResponse(url: string, method: string = 'get'): any {
         },
         recommended_actions: [
           'Use parameterized queries and Object-Relational Mappers (ORM)',
-          'Deploy Cloud Armor SQLi WAF preconfigured security rules',
+          'Deploy AWS WAF SQLi WAF preconfigured security rules',
         ],
-        plain_english_summary: 'Historical replay of an SQL Injection attack from the CIC-IDS2017 dataset. AdaptiveCloud caught the SQLi signature and assigned the Cloud Armor WAF filter playbook to block the exploit without taking the server offline.',
+        plain_english_summary: 'Historical replay of an SQL Injection attack from the CIC-IDS2017 dataset. AdaptiveCloud caught the SQLi signature and assigned the AWS WAF WAF filter playbook to block the exploit without taking the server offline.',
         created_at: new Date(Date.now() - 1000 * 60 * 360).toISOString(),
         updated_at: new Date().toISOString(),
       },
@@ -2037,14 +2037,14 @@ export function getMockResponse(url: string, method: string = 'get'): any {
         ],
         self_healing: {
           playbook_id: 'PB_WAF_INJECT_RULE',
-          playbook_name: 'Cloud Armor Log4Shell Mitigation Rule',
+          playbook_name: 'AWS WAF Log4Shell Mitigation Rule',
           status: 'ready_for_review',
           duration_ms: 310,
           target_layer: 'web_application',
           actions_dispatched: [
             {
               type: 'waf_rule_inject',
-              command: 'gcloud compute security-policies rules create 2001 --expression="evaluatePreconfiguredExpr(\'cve-can-2021-44228\')" --action=deny-403',
+              command: 'aws wafv2 update-web-acl --name adaptivecloud-waf --scope REGIONAL --rules file://log4j-rule.json',
               result: 'Edge WAF Log4Shell filter queued for deployment',
               status: 'simulated',
             },
@@ -2064,57 +2064,6 @@ export function getMockResponse(url: string, method: string = 'get'): any {
         ],
         plain_english_summary: 'Historical replay of the critical Log4Shell remote code execution vulnerability. AdaptiveCloud classified the attack signature with 99.5% confidence and mapped it to edge WAF filtering.',
         created_at: new Date(Date.now() - 1000 * 60 * 400).toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-
-      'inc-005': {
-        id: 'rca-005',
-        incident_id: 'inc-005',
-        title: 'Stealth TCP SYN Reconnaissance & Port Sweep',
-        mitre_technique: 'T1046 (Network Service Scanning)',
-        target_asset: 'PHYSICAL-LAPTOP-02 (Lab Workstation A)',
-        probable_cause: 'External adversary running stealth half-open SYN sweep across ports 1-1024 to discover open daemon ports and vulnerable service banners.',
-        confidence: 0.924,
-        source_ips: [{ ip: '203.0.113.88', count: 1024, country: 'External Scanner Node', city: 'Recon Source' }],
-        affected_hosts: ['PHYSICAL-LAPTOP-02'],
-        evidence: {
-          scanned_ports: 1024,
-          scan_speed: '185 ports/sec',
-          packet_size: '44 bytes (TCP SYN)',
-        },
-        timeline: [
-          { ts: new Date(Date.now() - 1000 * 60 * 92).toISOString(), type: 'NETWORK_PROBE', description: 'SYN sweep initiated across port range 1-1024', source: 'Host Adapter Watchdog' },
-          { ts: new Date(Date.now() - 1000 * 60 * 90).toISOString(), type: 'ML_CLASSIFICATION', description: 'Classified port_scan with 92.4% confidence', source: 'Adaptive Threat Engine' },
-        ],
-        self_healing: {
-          playbook_id: 'ACT_DROP_SCANNER_IP',
-          playbook_name: 'Dynamic Scanner IP Null-Route & Stealth Mode',
-          status: 'ready_for_review',
-          duration_ms: 280,
-          target_layer: 'host_os',
-          actions_dispatched: [
-            {
-              type: 'firewall_drop',
-              command: 'netsh advfirewall firewall add rule name="Block_Scanner_203.0.113.88" dir=in action=block remoteip=203.0.113.88',
-              result: 'Dynamic firewall null-route rule queued for scanner IP',
-              status: 'simulated',
-            },
-          ],
-          verification_probe: {
-            metrics_before: { scanned_ports_count: 1024 },
-            metrics_after: { scanned_ports_count: 0 },
-            health_check_passed: true,
-            verification_time_ms: 250,
-          },
-          rollback_available: true,
-          executed_at: new Date(Date.now() - 1000 * 60 * 90).toISOString(),
-        },
-        recommended_actions: [
-          'Close unused listening TCP/UDP ports on Windows endpoints',
-          'Deploy host-based stealth mode to suppress TCP RST responses',
-        ],
-        plain_english_summary: 'An external adversary probed 1,024 network ports on Lab Workstation A to find vulnerabilities. AdaptiveCloud caught the scan pattern and matched it with the Dynamic Scanner Null-Route playbook.',
-        created_at: new Date(Date.now() - 1000 * 60 * 90).toISOString(),
         updated_at: new Date().toISOString(),
       },
 
@@ -2225,11 +2174,11 @@ export function getMockResponse(url: string, method: string = 'get'): any {
         incident_id: 'inc-ds-163',
         title: 'Public Cloud Storage Bucket Exposure (Cloud Control Plane)',
         mitre_technique: 'T1530 (Data from Cloud Storage Object)',
-        target_asset: 'gs://adaptive-customer-records (Cloud Storage)',
+        target_asset: 's3://adaptive-customer-records (Cloud Storage)',
         probable_cause: 'Storage bucket permissions inadvertently changed to allUsers public read, allowing unauthenticated mass data downloads.',
         confidence: 0.988,
         source_ips: [{ ip: '100.64.0.88', count: 3200, country: 'External IP', city: 'Cloud Egress' }],
-        affected_hosts: ['gs://adaptive-customer-records'],
+        affected_hosts: ['s3://adaptive-customer-records'],
         evidence: {
           acl_member: 'allUsers (Public Read)',
           egress_burst: '3,200 requests/sec',
@@ -2243,11 +2192,11 @@ export function getMockResponse(url: string, method: string = 'get'): any {
           playbook_name: 'Enforce Uniform Bucket Access & Freeze Egress',
           status: 'ready_for_review',
           duration_ms: 410,
-          target_layer: 'gcp_storage',
+          target_layer: 'aws_s3',
           actions_dispatched: [
             {
               type: 'gcs_lockdown',
-              command: 'gcloud storage buckets update gs://adaptive-customer-records --uniform-bucket-level-access',
+              command: 'aws s3api put-public-access-block --bucket adaptive-customer-records --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true',
               result: 'Uniform bucket access enforced; public read grants revoked',
               status: 'simulated',
             },
@@ -2263,7 +2212,7 @@ export function getMockResponse(url: string, method: string = 'get'): any {
         },
         recommended_actions: [
           'Enforce Organization Policy: constraints/storage.publicAccessPrevention',
-          'Deploy Google Cloud DLP inspect jobs to monitor sensitive bucket contents',
+          'Deploy Amazon Web Services (AWS) DLP inspect jobs to monitor sensitive bucket contents',
         ],
         plain_english_summary: 'Cloud control plane replay of an accidental public bucket data exposure. AdaptiveCloud identified the unauthorized public ACL grant and queued the Uniform Bucket Access Freeze playbook in 410ms.',
         created_at: new Date(Date.now() - 1000 * 60 * 550).toISOString(),
@@ -2395,7 +2344,7 @@ export function getMockResponse(url: string, method: string = 'get'): any {
       },
       {
         id: 'pred-02',
-        host_id: 'host-gcp-02',
+        host_id: 'host-aws-02',
         ts: new Date().toISOString(),
         kind: 'disk',
         horizon_min: 1440,
@@ -2411,7 +2360,7 @@ export function getMockResponse(url: string, method: string = 'get'): any {
     return [
       {
         id: 'maint-01',
-        host_id: 'host-gcp-02',
+        host_id: 'host-aws-02',
         component: 'disk',
         metric_name: 'C: Drive Capacity',
         days_remaining: 4,
@@ -2527,13 +2476,13 @@ export function getMockResponse(url: string, method: string = 'get'): any {
     ];
   }
 
-  if (cleanUrl.includes('/gcp/status')) {
+  if (cleanUrl.includes('/aws/status') || cleanUrl.includes('/gcp/status') || cleanUrl.includes('/cloud/status')) {
     return {
       is_live_connected: true,
       project_id: 'adaptive-learning-ml',
       service_account: 'adaptivecloud-collector@adaptive-learning-ml.iam.gserviceaccount.com',
       region: 'us-central1 / asia-south1',
-      auth_method: 'GCP Service Account ADC (Active)',
+      auth_method: 'AWS Service Account ADC (Active)',
       monitored_services: [
         { name: 'Compute Engine (GCE)', status: 'online', count: '4 Active VMs' },
         { name: 'VPC Flow Logs', status: 'streaming', count: '1,420 pkts/s' },
@@ -2549,7 +2498,7 @@ export function getMockResponse(url: string, method: string = 'get'): any {
     return {
       total_attack_classes: 124,
       threat_families_count: 10,
-      cloud_vectors: ['gcp_compute', 'gcp_vpc', 'gcp_iam', 'gcp_storage', 'gke', 'api_gateway'],
+      cloud_vectors: ['aws_ec2', 'aws_vpc', 'aws_iam', 'aws_s3', 'gke', 'api_gateway'],
     };
   }
 
@@ -2565,7 +2514,7 @@ export function getMockResponse(url: string, method: string = 'get'): any {
       execution_logs: [
         'STAGE 1: Ingested classification confidence: 96.8%. Threat level: HIGH.',
         'STAGE 2: Guardrails check passed. Target IP not in protected infrastructure whitelist.',
-        'STAGE 3: Injected GCP VPC firewall rule: DENY INGRESS 198.51.100.45/32 on port 3389.',
+        'STAGE 3: Injected AWS VPC firewall rule: DENY INGRESS 198.51.100.45/32 on port 3389.',
         'STAGE 4: Verification probe completed. Zero inbound packets detected; target socket closed.',
         'STAGE 5: Autonomous self-healing completed in 240ms. Audit entry committed.',
       ],

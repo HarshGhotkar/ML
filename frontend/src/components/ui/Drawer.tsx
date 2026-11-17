@@ -5,12 +5,13 @@ import { X } from 'lucide-react';
 interface DrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  title: string;
+  title: React.ReactNode;
   subtitle?: string;
+  size?: 'sm' | 'md' | 'lg' | 'xl' | string;
   children: React.ReactNode;
 }
 
-export function Drawer({ isOpen, onClose, title, subtitle, children }: DrawerProps) {
+export function Drawer({ isOpen, onClose, title, subtitle, size, children }: DrawerProps) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -27,11 +28,13 @@ export function Drawer({ isOpen, onClose, title, subtitle, children }: DrawerPro
 
   if (!isOpen) return null;
 
+  const widthClass = size === 'lg' ? 'max-w-2xl' : size === 'xl' ? 'max-w-4xl' : size === 'sm' ? 'max-w-sm' : 'max-w-md';
+
   return (
     <div className="fixed inset-0 z-50 overflow-hidden">
       <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onClick={onClose} />
       <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-md bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col">
+        <div className={`w-screen ${widthClass} bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col`}>
           <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
             <div>
               <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">{title}</h2>

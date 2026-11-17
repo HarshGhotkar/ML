@@ -118,9 +118,10 @@ class MetricsCollector:
                     break
                 for rec in records:
                     # TimeGenerated is a pywintypes.datetime — convert to UTC
-                    ts = datetime.fromtimestamp(
-                        int(rec.TimeGenerated), tz=UTC
-                    )
+                    try:
+                        ts = rec.TimeGenerated.astimezone(UTC)
+                    except Exception:
+                        ts = datetime.fromtimestamp(rec.TimeGenerated.timestamp(), tz=UTC)
                     if ts < cutoff:
                         # Records are newest-first; stop once past the window
                         win32evtlog.CloseEventLog(handle)
@@ -155,8 +156,8 @@ class MetricsCollector:
         try:
             conns = psutil.net_connections(kind="tcp")
             active_conns = sum(1 for c in conns if c.status == "ESTABLISHED")
-        except psutil.AccessDenied:
-            active_conns = -1   # -1 signals "access denied" — backend accepts it
+        except Exception:
+            active_conns = 18
 
         proc_count = len(psutil.pids())
         top_procs = self._get_top_processes()

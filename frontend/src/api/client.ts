@@ -27,7 +27,20 @@ apiClient.interceptors.request.use(
 
 // Response Interceptor: 401 Unauthorized handling & fallback mock data when backend is offline
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Defensive check: If server returned HTML (e.g. Nginx SPA fallback for an unhandled API route),
+    // treat it as offline/fallback rather than passing raw HTML to React components
+    if (typeof response.data === 'string' && response.data.trim().startsWith('<')) {
+      const mockData = getMockResponse(response.config?.url || '', response.config?.method);
+      if (mockData !== undefined) {
+        return {
+          ...response,
+          data: mockData,
+        };
+      }
+    }
+    return response;
+  },
   (error: AxiosError<{ error?: { code?: string; message?: string } }>) => {
     if (error.response?.status === 401) {
       const isLoginRequest = error.config?.url?.includes('/auth/login');

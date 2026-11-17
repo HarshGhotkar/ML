@@ -41,11 +41,11 @@ interface EnhancedHost extends Host {
 const DEFAULT_FLEET_HOSTS: EnhancedHost[] = [
   {
     id: 'host-laptop-01',
-    hostname: 'PHYSICAL-LAPTOP-01',
-    display_label: 'Host Laptop (Pradnyan PC)',
+    hostname: 'ASUS VivoBook (Primary Physical Node)',
+    display_label: 'Physical Hardware ➔ AWS Cloud Connected (ap-south-1)',
     os_version: 'Windows 11 Pro (Physical Bare-Metal)',
     agent_platform: 'windows',
-    ip_address: '192.168.1.101',
+    ip_address: 'Uplink: AWS Cloud (13.126.201.190)',
     status: 'online',
     is_physical: true,
     cpu: 28,
@@ -117,15 +117,15 @@ const DEFAULT_FLEET_HOSTS: EnhancedHost[] = [
   },
   {
     id: 'host-cloud-01',
-    hostname: 'GCP-VM-EU-02',
-    display_label: 'Google Cloud Central Gateway',
-    os_version: 'Windows Server 2022 (Google Cloud)',
-    agent_platform: 'windows',
-    ip_address: '100.64.0.15',
+    hostname: 'AWS-EC2-SOUTH-01',
+    display_label: 'AWS Cloud Central Gateway (EC2 t3.micro)',
+    os_version: 'Ubuntu 24.04 LTS (AWS EC2 ap-south-1)',
+    agent_platform: 'linux',
+    ip_address: '13.126.201.190',
     status: 'online',
     is_physical: false,
-    cpu: 82,
-    mem: 76,
+    cpu: 28,
+    mem: 45,
     active_threat: 'Volumetric SYN Flood DDoS',
     threat_mitre: 'T1498.001',
     threat_severity: 'critical',
@@ -170,36 +170,52 @@ export function MonitoringPage() {
         hostList = [...DEFAULT_FLEET_HOSTS];
       }
 
-      // Probe local physical agent hub on port 8001 to retrieve genuine machine name and connected friends
+      // Probe physical agent hub to retrieve genuine machine name and connected friends
+      // In production behind Nginx reverse proxy, use relative URLs ('') so HTTPS requests are not blocked on port 8001
+      const hubOrigin = typeof window !== 'undefined'
+        ? (window.location.port === '5173' || window.location.port === '3000' ? `http://${window.location.hostname}:8001` : '')
+        : 'http://127.0.0.1:8001';
+
       try {
-        const infoRes = await fetch('http://127.0.0.1:8001/info', { mode: 'cors' });
+        const infoRes = await fetch(`${hubOrigin}/info`, { mode: 'cors' });
         if (infoRes.ok) {
           const info = await infoRes.json();
           const pIndex = hostList.findIndex((h) => h.id === 'host-laptop-01');
           if (pIndex !== -1) {
             hostList[pIndex] = {
               ...hostList[pIndex],
-              hostname: `${info.hostname} (Live Physical Host)`,
-              display_label: `Local Host Machine (${info.hostname})`,
-              ip_address: info.ip_address || hostList[pIndex].ip_address,
+              hostname: 'ASUS VivoBook (Primary Physical Node)',
+              display_label: 'Physical Hardware ➔ AWS Cloud Connected (ap-south-1)',
+              ip_address: 'Uplink: AWS Cloud (13.126.201.190)',
               os_version: info.os_version || hostList[pIndex].os_version,
               status: 'online',
             };
           }
         }
 
-        // Check for connected friend laptops
-        const peersRes = await fetch('http://127.0.0.1:8001/peers', { mode: 'cors' });
+        // Check for connected peer laptops
+        const peersRes = await fetch(`${hubOrigin}/peers`, { mode: 'cors' });
         if (peersRes.ok) {
           const peers = await peersRes.json();
           Object.entries(peers).forEach(([cardId, peerData]: [string, any]) => {
             const peerIdx = hostList.findIndex((h) => h.id === cardId);
             if (peerIdx !== -1) {
+              const isLaptop01 = cardId === 'host-laptop-01';
+              const cleanHostname = isLaptop01
+                ? 'ASUS VivoBook (Primary Physical Node)'
+                : (peerData.hostname || hostList[peerIdx].hostname);
+              const cleanDisplayLabel = isLaptop01
+                ? 'Physical Hardware ➔ AWS Cloud Connected (ap-south-1)'
+                : (peerData.display_label || `${cleanHostname} ➔ AWS Synced`);
+              const cleanIp = isLaptop01
+                ? 'Uplink: AWS Cloud (13.126.201.190)'
+                : (peerData.ip_address && peerData.ip_address !== '127.0.0.1' ? peerData.ip_address : 'AWS Cloud Synced');
+
               hostList[peerIdx] = {
                 ...hostList[peerIdx],
-                hostname: `${peerData.hostname} (Friend's Laptop)`,
-                display_label: peerData.display_label || `Remote Physical Laptop (${peerData.hostname})`,
-                ip_address: peerData.ip_address || hostList[peerIdx].ip_address,
+                hostname: cleanHostname,
+                display_label: cleanDisplayLabel,
+                ip_address: cleanIp,
                 os_version: peerData.os_version || hostList[peerIdx].os_version,
                 cpu: peerData.cpu || hostList[peerIdx].cpu,
                 mem: peerData.mem || hostList[peerIdx].mem,
@@ -224,10 +240,14 @@ export function MonitoringPage() {
     queryFn: async () => {
       if (!activeHost?.id) return { host_id: '', points: [], isLiveHardware: false };
 
-      // Probe physical agent hub on port 8001 for Laptop #1 or connected friend laptops
+      // Probe physical agent hub for Laptop #1 or connected friend laptops
+      const hubOrigin = typeof window !== 'undefined'
+        ? (window.location.port === '5173' || window.location.port === '3000' ? `http://${window.location.hostname}:8001` : '')
+        : 'http://127.0.0.1:8001';
+
       if (activeHost.id.startsWith('host-laptop-')) {
         try {
-          const res = await fetch(`http://127.0.0.1:8001/hosts/${activeHost.id}/metrics`, { mode: 'cors' });
+          const res = await fetch(`${hubOrigin}/hosts/${activeHost.id}/metrics`, { mode: 'cors' });
           if (res.ok) {
             const agentData = await res.json();
             return {
@@ -356,13 +376,13 @@ export function MonitoringPage() {
             Infrastructure & Physical Laptop Fleet
           </h1>
           <p className="text-xs text-zinc-400 mt-1">
-            Real-time telemetry, active socket monitoring, ML threat classification, and autonomous self-healing across 4 physical laptops and 1 Google Cloud server.
+            Real-time telemetry, active socket monitoring, ML threat classification, and autonomous self-healing across 4 physical laptops and 1 AWS Cloud EC2 server.
           </p>
         </div>
         <div className="flex items-center space-x-3">
           <div className="px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center space-x-2 text-xs">
             <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="font-mono text-zinc-300 font-semibold">4 Physical Laptops + 1 GCP Controller</span>
+            <span className="font-mono text-zinc-300 font-semibold">4 Physical Laptops + 1 AWS Cloud Controller</span>
           </div>
         </div>
       </div>
@@ -388,13 +408,19 @@ export function MonitoringPage() {
               {/* Header Badge */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <div className={`p-2 rounded-xl border ${isPhysical ? 'border-zinc-700 bg-zinc-800' : 'border-zinc-700 bg-zinc-800'}`}>
+                  <div className={`p-2 rounded-xl border border-zinc-700 bg-zinc-800`}>
                     {isPhysical ? <Laptop className="h-4 w-4 text-white" /> : <Cloud className="h-4 w-4 text-white" />}
                   </div>
-                  <div>
+                  <div className="flex flex-col gap-0.5">
                     <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-white text-black font-mono">
-                      {isPhysical ? `PHYSICAL LAPTOP #${laptopNum}` : 'GCP CLOUD GATEWAY'}
+                      {isPhysical ? `PHYSICAL LAPTOP #${laptopNum}` : 'AWS CLOUD GATEWAY'}
                     </span>
+                    {isPhysical && (
+                      <span className="text-[9px] font-mono text-emerald-400 flex items-center gap-1 font-bold">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        AWS CLOUD LINKED
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center space-x-1.5">
@@ -407,9 +433,20 @@ export function MonitoringPage() {
               <div className="mt-4">
                 <h3 className="text-sm font-bold text-white tracking-tight truncate">{host.hostname}</h3>
                 <p className="text-[11px] text-zinc-400 font-mono mt-0.5 truncate">{host.display_label || host.os_version}</p>
-                <div className="flex items-center justify-between text-[11px] text-zinc-500 font-mono mt-2 pt-2 border-t border-zinc-800/80">
-                  <span>IP: {host.ip_address}</span>
-                  <span className="capitalize text-zinc-300 font-bold">{isPhysical ? 'Bare-Metal' : 'GCP Compute'}</span>
+                <div className="flex items-center justify-between text-[11px] text-zinc-400 font-mono mt-2 pt-2 border-t border-zinc-800/80">
+                  <span className="truncate max-w-[170px] text-zinc-300">
+                    {host.ip_address?.startsWith('Uplink:') ? host.ip_address : `IP: ${host.ip_address}`}
+                  </span>
+                  <span className={`font-bold ${isPhysical ? 'text-emerald-400' : 'text-sky-400'} flex items-center gap-1`}>
+                    {isPhysical ? (
+                      <>
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        Bare-Metal ➔ AWS
+                      </>
+                    ) : (
+                      'AWS EC2 (ap-south-1)'
+                    )}
+                  </span>
                 </div>
               </div>
 
@@ -485,30 +522,31 @@ export function MonitoringPage() {
               <p className="text-xs font-bold text-white flex items-center gap-2">
                 {activeHost.id === 'host-laptop-01'
                   ? metricsData?.isLiveHardware
-                    ? '🟢 LIVE PHYSICAL HARDWARE SENSORS STREAMING (HOST LAPTOP)'
-                    : '💻 PHYSICAL LAPTOP #1 READY (HOST MACHINE)'
+                    ? '🟢 LIVE PHYSICAL HARDWARE SENSORS STREAMING ➔ AWS CLOUD HUB (ap-south-1)'
+                    : '💻 PHYSICAL LAPTOP #1 READY ➔ AWS CLOUD (ap-south-1)'
                   : `💻 ${activeHost.hostname} SELECTED (${activeHost.display_label || 'Physical Endpoint'})`}
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-black border border-zinc-700 text-zinc-300">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 font-bold">
                   {activeHost.ip_address}
                 </span>
               </p>
               <p className="text-[11px] text-zinc-400 mt-0.5">
                 {activeHost.id === 'host-laptop-01'
                   ? metricsData?.isLiveHardware
-                    ? 'Receiving 100% genuine local hardware telemetry: physical CPU load, RAM usage, and active Windows processes from this laptop.'
-                    : 'To stream real hardware sensors from this laptop: run "run_laptop_agent.bat" or "python agent/run_laptop_agent.py" in your terminal.'
-                  : `Physical endpoint telemetry active. Collecting process trees, network sockets, and real-time security events for ${activeHost.hostname}.`}
+                    ? '100% genuine local physical laptop telemetry (CPU, RAM, process tree, network sockets) streaming live across the internet into the AWS Cloud EC2 instance (13.126.201.190, ap-south-1 Mumbai).'
+                    : 'Streaming telemetry directly to AWS Cloud Controller: run "python agent/src/main.py".'
+                  : `Physical endpoint telemetry active. Collecting process trees, network sockets, and real-time security events streaming to AWS Cloud.`}
               </p>
             </div>
           </div>
           <div className="flex items-center space-x-2 shrink-0">
             {activeHost.id === 'host-laptop-01' ? (
-              <span className="text-[11px] font-mono bg-black px-3 py-1.5 rounded-lg border border-zinc-800 text-white font-semibold">
-                CLI: python agent/run_laptop_agent.py
+              <span className="text-[11px] font-mono bg-emerald-950/80 px-3 py-1.5 rounded-lg border border-emerald-500/50 text-emerald-300 font-semibold flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                AWS Uplink: Active (13.126.201.190)
               </span>
             ) : (
               <span className="text-[11px] font-mono bg-black px-3 py-1.5 rounded-lg border border-zinc-800 text-zinc-300 font-semibold">
-                Latency: 1.2ms (LAN Socket)
+                Latency: 1.2ms (AWS Synced)
               </span>
             )}
           </div>
@@ -750,7 +788,7 @@ export function MonitoringPage() {
                 <div className="flex justify-between py-1.5 border-b border-zinc-800">
                   <span className="text-zinc-400">Agent Type</span>
                   <span className="font-mono uppercase text-white font-semibold">
-                    {activeHost.is_physical !== false ? 'Bare-Metal Physical Agent' : 'Google Cloud VPC Daemon'}
+                    {activeHost.is_physical !== false ? 'Bare-Metal Physical Agent' : 'AWS EC2 Cloud Daemon'}
                   </span>
                 </div>
                 <div className="flex justify-between py-1.5 border-b border-zinc-800">

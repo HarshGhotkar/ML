@@ -189,24 +189,24 @@ export function RcaPage() {
           dynamicProbe = 'Endpoint Process & CPU Telemetry Probe';
           dynamicMessage = 'PID 4912 terminated; CPU dropped from 94% to 14.5% baseline.';
         } else if (actId === 'ACT_REVOKE_SA_KEY') {
-          dynamicCommand = 'gcloud iam service-accounts keys delete 8f492b1a8c9e --iam-account=adaptive-agent@iam.gserviceaccount.com --quiet';
-          dynamicProbe = 'Cloud IAM Credential Verification Check';
-          dynamicMessage = 'Key permanently revoked; unauthorized API requests rejected with HTTP 401.';
+          dynamicCommand = 'aws iam delete-access-key --user-name dev-builder --access-key-id AKIAIOSFODNN7EXAMPLE';
+          dynamicProbe = 'AWS IAM Credential Verification Check';
+          dynamicMessage = 'Key permanently revoked; unauthorized AWS API requests rejected with HTTP 403.';
         } else if (actId === 'ACT_WAF_INJECT_RULE') {
-          dynamicCommand = 'gcloud compute security-policies rules create 2000 --expression="evaluatePreconfiguredExpr(\'sqli-v33-stable\')" --action=deny-403';
-          dynamicProbe = 'WAF Exploit Signature Ingress Probe';
-          dynamicMessage = 'Signature filter active at reverse proxy; payload blocked with HTTP 403 Forbidden.';
+          dynamicCommand = 'aws wafv2 update-web-acl --name adaptivecloud-waf --scope REGIONAL --rules file://sqli-rule.json';
+          dynamicProbe = 'AWS WAF Exploit Signature Ingress Probe';
+          dynamicMessage = 'AWS WAF signature filter active at cloud gateway; payload blocked with HTTP 403 Forbidden.';
         } else if (actId === 'ACT_FREEZE_BUCKET_EGRESS') {
-          dynamicCommand = 'gcloud storage buckets update gs://adaptive-secure-backups --uniform-bucket-level-access';
-          dynamicProbe = 'Cloud Storage Egress Telemetry Probe';
-          dynamicMessage = 'Public access blocked; unauthorized storage egress reduced from 180 MB/s to 0 MB/s.';
+          dynamicCommand = 'aws s3api put-public-access-block --bucket adaptive-secure-backups --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true';
+          dynamicProbe = 'Amazon S3 CloudWatch Egress Telemetry Probe';
+          dynamicMessage = 'S3 public access blocked; unauthorized storage egress reduced to 0 MB/s.';
         } else if (actId === 'ACT_TERMINATE_EXPLOIT_PID') {
           dynamicCommand = 'taskkill /F /PID 7420 && klist purge';
           dynamicProbe = 'Memory Handle & EDR Watchdog';
           dynamicMessage = 'Injector PID 7420 terminated; Kerberos ticket cache flushed to prevent reuse.';
-        } else if (actId === 'ACT_GCP_ARMOR_RATE_LIMIT') {
-          dynamicCommand = 'gcloud compute security-policies rules create 1000 --action=rate-based-ban --rate-limit-threshold-count=100';
-          dynamicProbe = 'GCP Cloud Monitoring Edge Packet Flow Probe';
+        } else if (actId === 'ACT_AWS_WAF_RATE_LIMIT' || actId === 'ACT_GCP_ARMOR_RATE_LIMIT') {
+          dynamicCommand = 'aws wafv2 update-web-acl --name adaptivecloud-rate-limit --scope REGIONAL --default-action Block={}';
+          dynamicProbe = 'AWS CloudWatch Edge Packet Flow Probe';
           dynamicMessage = 'Inbound packet rate dropped from 94,000 pps to 110 pps (99.8% reduction).';
         } else if (actId === 'ACT_DROP_SCANNER_IP') {
           dynamicCommand = 'netsh advfirewall firewall add rule name="Block_Scanner_IP" dir=in action=block';
@@ -360,10 +360,10 @@ export function RcaPage() {
       header: 'Target Asset / Host',
       render: (row) => {
         const asset = row.host_id || row.target_asset || 'Physical Fleet';
-        const isGcp = asset.toLowerCase().includes('gcp') || asset.toLowerCase().includes('cloud');
+        const isCloud = asset.toLowerCase().includes('aws') || asset.toLowerCase().includes('cloud') || asset.toLowerCase().includes('ec2');
         return (
           <div className="flex items-center space-x-1.5">
-            {isGcp ? <Cloud className="h-3.5 w-3.5 text-white" /> : <Laptop className="h-3.5 w-3.5 text-white" />}
+            {isCloud ? <Cloud className="h-3.5 w-3.5 text-white" /> : <Laptop className="h-3.5 w-3.5 text-white" />}
             <span className="font-mono text-xs text-zinc-300 truncate max-w-[180px]">{asset}</span>
           </div>
         );
@@ -787,7 +787,7 @@ export function RcaPage() {
                                 : selectedIncident.tier1_family === 'host_windows' || selectedIncident.tier1_family === 'privilege_escalation'
                                 ? 'ACT_TERMINATE_EXPLOIT_PID'
                                 : selectedIncident.tier1_family === 'ddos' || selectedIncident.tier1_family === 'dos'
-                                ? 'ACT_GCP_ARMOR_RATE_LIMIT'
+                                ? 'ACT_AWS_WAF_RATE_LIMIT'
                                 : selectedIncident.tier1_family === 'infiltration'
                                 ? 'ACT_ISOLATE_NETWORK_INTERFACE'
                                 : selectedIncident.tier1_family === 'port_scan'
@@ -797,15 +797,15 @@ export function RcaPage() {
                               selectedIncident.tier1_family === 'cryptomining'
                                 ? 'Terminate Rogue Mining Process & Quarantine Binary'
                                 : selectedIncident.tier1_family === 'cloud_iam'
-                                ? 'Revoke Compromised Service Account Key via IAM API'
+                                ? 'Revoke Compromised AWS IAM Access Key'
                                 : selectedIncident.tier1_family === 'web_attack'
-                                ? 'Deploy Cloud Armor WAF Exploit Signature Rule'
+                                ? 'Deploy AWS WAF Exploit Signature Rule'
                                 : selectedIncident.tier1_family === 'cloud_storage'
-                                ? 'Enforce Uniform Bucket Access & Freeze Public Egress'
+                                ? 'Freeze S3 Bucket Public Access & Halt Egress'
                                 : selectedIncident.tier1_family === 'host_windows' || selectedIncident.tier1_family === 'privilege_escalation'
                                 ? 'Terminate Exploit Process & Purge Kerberos Tickets'
                                 : selectedIncident.tier1_family === 'ddos' || selectedIncident.tier1_family === 'dos'
-                                ? 'Google Cloud Armor Edge Rate-Limiting & Ingress Drop'
+                                ? 'AWS WAF Edge Rate-Limiting & Security Group Drop'
                                 : selectedIncident.tier1_family === 'infiltration'
                                 ? 'Isolate Rogue Network Interface & Flush ARP Cache'
                                 : selectedIncident.tier1_family === 'port_scan'
@@ -819,11 +819,11 @@ export function RcaPage() {
                                 : selectedIncident.tier1_family === 'web_attack'
                                 ? 'Inject signature filter blocking SQLi/SSRF/Log4Shell payloads at reverse proxy'
                                 : selectedIncident.tier1_family === 'cloud_storage'
-                                ? 'Lock down public GCS bucket permissions and halt mass data egress'
+                                ? 'Lock down public Amazon S3 bucket permissions and halt mass data egress'
                                 : selectedIncident.tier1_family === 'host_windows' || selectedIncident.tier1_family === 'privilege_escalation'
                                 ? 'Forcefully terminate injector PID and flush cached logon sessions'
                                 : selectedIncident.tier1_family === 'ddos' || selectedIncident.tier1_family === 'dos'
-                                ? 'Deploy rate-based ban on Cloud Armor edge security policy for 3600s'
+                                ? 'Deploy rate-based ban on AWS WAF edge security policy for 3600s'
                                 : selectedIncident.tier1_family === 'infiltration'
                                 ? 'Disable compromised virtual adapter and purge poisoned ARP/DNS records'
                                 : selectedIncident.tier1_family === 'port_scan'
@@ -849,7 +849,7 @@ export function RcaPage() {
                                 : selectedIncident.tier1_family === 'cryptomining'
                                 ? 'Restore binary from quarantine folder if false positive; process restart required'
                                 : selectedIncident.tier1_family === 'web_attack'
-                                ? 'Remove signature rule from Cloud Armor security policy'
+                                ? 'Remove signature rule from AWS WAF security policy'
                                 : selectedIncident.tier1_family === 'cloud_storage'
                                 ? 'Restore prior bucket ACLs and disable uniform bucket enforcement'
                                 : 'Remove dynamic block/null-route rule from firewall adapter',

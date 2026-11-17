@@ -14,6 +14,9 @@ $RepoRoot = Split-Path -Parent $PSScriptRoot
 $BackendDir = Join-Path $RepoRoot "backend"
 $FrontendDir = Join-Path $RepoRoot "frontend"
 $PythonExe = Join-Path $BackendDir ".venv\Scripts\python.exe"
+if (-not (Test-Path $PythonExe)) {
+    $PythonExe = "python"
+}
 
 Write-Host "========================================================================" -ForegroundColor Cyan
 Write-Host "   ADAPTIVECLOUD - LOCAL DEVELOPMENT RUNTIME LAUNCHER                   " -ForegroundColor Cyan

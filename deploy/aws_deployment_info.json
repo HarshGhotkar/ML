@@ -1,0 +1,8 @@
+{
+  "instance_id": "i-098c54730ff60bf4a",
+  "public_ip": "13.126.201.190",
+  "region": "ap-south-1",
+  "dashboard_url": "http://13.126.201.190",
+  "hub_api_url": "http://13.126.201.190:8001",
+  "ingest_url": "http://13.126.201.190/api/v1/ingest"
+}

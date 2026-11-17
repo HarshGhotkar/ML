@@ -28,7 +28,8 @@ frontend/build/
 .pnp.*
 
 # ── Environment & Secrets ────────────────────────────────────────────────────
-.env
+.env*
+*.env
 .env.local
 .env.*.local
 *.env.local

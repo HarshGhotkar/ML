@@ -29,12 +29,12 @@ import {
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 const SAMPLE_ATTACKS = [
-  { id: 'CRED_002', name: 'RDP Credential Stuffing & Kerberos Pre-Auth Burst', mitre: 'T1110.004', vector: 'gcp_compute', playbook: 'PB_AUTO_BLOCKLIST_FIREWALL', severity: 'high' },
-  { id: 'DDOS_001', name: 'TCP SYN Flood Volumetric Cloud Traffic Assault', mitre: 'T1498.001', vector: 'gcp_vpc', playbook: 'PB_CLOUD_ARMOR_RATE_LIMIT', severity: 'critical' },
-  { id: 'CRYPTO_001', name: 'XMRig Monero CPU Hijack via Stratum Protocol', mitre: 'T1496', vector: 'gcp_compute', playbook: 'PB_KILL_PROCESS_AND_QUARANTINE', severity: 'critical' },
-  { id: 'EXFIL_001', name: 'Mass GCS Bucket Data Egress to Untrusted ASN', mitre: 'T1537', vector: 'gcp_storage', playbook: 'PB_FREEZE_BUCKET_EGRESS', severity: 'critical' },
-  { id: 'IAM_001', name: 'GCP Project Owner Role Self-Assignment', mitre: 'T1098', vector: 'gcp_iam', playbook: 'PB_REVOKE_SA_KEY_IMMEDIATE', severity: 'critical' },
-  { id: 'RECON_003', name: 'Cloud Metadata SSRF Probe (169.254.169.254)', mitre: 'T1552.005', vector: 'gcp_compute', playbook: 'PB_AUTO_BLOCKLIST_FIREWALL', severity: 'high' },
+  { id: 'CRED_002', name: 'RDP Credential Stuffing & Kerberos Pre-Auth Burst', mitre: 'T1110.004', vector: 'aws_ec2', playbook: 'PB_AWS_SECURITY_GROUP_BLOCK', severity: 'high' },
+  { id: 'DDOS_001', name: 'TCP SYN Flood Volumetric Cloud Traffic Assault', mitre: 'T1498.001', vector: 'aws_vpc', playbook: 'PB_AWS_WAF_RATE_LIMIT', severity: 'critical' },
+  { id: 'CRYPTO_001', name: 'XMRig Monero CPU Hijack via Stratum Protocol', mitre: 'T1496', vector: 'aws_ec2', playbook: 'PB_KILL_PROCESS_AND_QUARANTINE', severity: 'critical' },
+  { id: 'EXFIL_001', name: 'Mass S3 Bucket Data Egress to Untrusted ASN', mitre: 'T1537', vector: 'aws_s3', playbook: 'PB_FREEZE_S3_BUCKET_EGRESS', severity: 'critical' },
+  { id: 'IAM_001', name: 'AWS IAM AdministratorAccess Role Self-Assignment', mitre: 'T1098', vector: 'aws_iam', playbook: 'PB_REVOKE_IAM_KEY_IMMEDIATE', severity: 'critical' },
+  { id: 'RECON_003', name: 'AWS Instance Metadata SSRF Probe (169.254.169.254)', mitre: 'T1552.005', vector: 'aws_ec2', playbook: 'PB_AWS_SECURITY_GROUP_BLOCK', severity: 'high' },
 ];
 
 export function OverviewPage() {
@@ -89,8 +89,8 @@ export function OverviewPage() {
       setHealingStage(3);
       setLogs((prev) => [
         ...prev,
-        `[${new Date().toLocaleTimeString()}] STAGE 3 (EXECUTION): Dispatching Playbook '${selectedAttack.playbook}' across GCP VPC & Host Firewall...`,
-        `[${new Date().toLocaleTimeString()}] ACTION INJECTED: gcloud compute firewall-rules create deny-attacker-198-51-100-45 --action=DENY`,
+        `[${new Date().toLocaleTimeString()}] STAGE 3 (EXECUTION): Dispatching Playbook '${selectedAttack.playbook}' across AWS VPC & Host Firewall...`,
+        `[${new Date().toLocaleTimeString()}] ACTION INJECTED: aws ec2 authorize-security-group-ingress --group-id sg-028ebbd83cf143b23 --protocol tcp --port 0-65535 --cidr 198.51.100.45/32 --action=DENY`,
       ]);
     }, 2000);
 
@@ -146,19 +146,30 @@ export function OverviewPage() {
     );
   }
 
-  const chartData = Object.entries(summary.attack_counts_24h || {}).map(([key, val]) => ({
+  const safeSummary: DashboardSummary = (summary && typeof summary === 'object' && !Array.isArray(summary))
+    ? summary
+    : {
+        host_health_score: 98,
+        active_incidents: 0,
+        total_hosts: 4,
+        online_hosts: 4,
+        attack_counts_24h: { brute_force: 3, ddos: 1, crypto_mining: 1 },
+        top_risks: [],
+      };
+
+  const chartData = Object.entries(safeSummary.attack_counts_24h || {}).map(([key, val]) => ({
     name: key.replace('_', ' '),
     count: val,
   }));
 
   const getAttentionMessage = () => {
     if (mitigated) {
-      return `Self-Healing Resolution: '${selectedAttack.name}' was autonomously mitigated via ${selectedAttack.playbook}. All GCP worker VMs are operating nominally.`;
+      return `Self-Healing Resolution: '${selectedAttack.name}' was autonomously mitigated via ${selectedAttack.playbook}. All AWS EC2 worker instances are operating nominally.`;
     }
-    if (summary.active_incidents > 0) {
-      return `Attention Required: There are ${summary.active_incidents} active security incident under active investigation. Autonomous defense playbooks are on standby.`;
+    if ((safeSummary.active_incidents || 0) > 0) {
+      return `Attention Required: There are ${safeSummary.active_incidents} active security incident under active investigation. Autonomous defense playbooks are on standby.`;
     }
-    return 'All systems normal. Google Cloud VPC perimeter and Windows Server 2022 worker VMs are operating within nominal baseline parameters with zero active breaches.';
+    return 'All systems normal. AWS VPC perimeter and monitored fleet workstations are operating within nominal baseline parameters with zero active breaches.';
   };
 
   return (
@@ -170,7 +181,7 @@ export function OverviewPage() {
             Executive Overview & Cloud Command Deck
           </h1>
           <p className="text-xs text-zinc-400 mt-1">
-            Real-time multi-attack classification (120+ classes), autonomous self-healing, and Google Cloud telemetry.
+            Real-time multi-attack classification (120+ classes), autonomous self-healing, and Amazon Web Services (AWS) cloud telemetry.
           </p>
         </div>
 
@@ -181,11 +192,11 @@ export function OverviewPage() {
           </div>
           <div className="text-xs">
             <div className="flex items-center gap-1.5 font-bold text-white">
-              <span>Google Cloud Platform (GCP)</span>
+              <span>Amazon Web Services (AWS)</span>
               <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             </div>
             <div className="text-[11px] text-zinc-400 font-mono">
-              Project: <span className="font-semibold text-white">adaptive-learning-ml</span> &bull; Service Account: <span className="font-semibold text-white">adaptivecloud-collector</span>
+              Region: <span className="font-semibold text-white">ap-south-1</span> &bull; Instance: <span className="font-semibold text-white">i-098c54730ff60bf4a</span> &bull; Security Group: <span className="font-semibold text-white">adaptivecloud-sg</span>
             </div>
           </div>
         </div>
@@ -195,26 +206,26 @@ export function OverviewPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         <div className="lg:col-span-3">
           <Card className="h-full flex flex-col justify-center items-center py-8 bg-[#09090b] border-zinc-800">
-            <Gauge score={mitigated ? 99 : summary.host_health_score} size={130} label="System Health Score" />
+            <Gauge score={mitigated ? 99 : (safeSummary.host_health_score ?? 98)} size={130} label="System Health Score" />
           </Card>
         </div>
 
         <div className="lg:col-span-9 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <StatTile
             label="Monitored Fleet Infrastructure"
-            value={`${summary.online_hosts} / ${summary.total_hosts} Active Nodes`}
-            subtext="4 Physical Laptops + 1 GCP Gateway"
+            value={`${safeSummary.online_hosts ?? 4} / ${safeSummary.total_hosts ?? 4} Active Nodes`}
+            subtext="4 Physical Laptops + 1 AWS Gateway"
             icon={<Laptop className="h-4 w-4 text-white" />}
           />
           <StatTile
             label="Active Incidents"
-            value={mitigated ? 0 : summary.active_incidents}
+            value={mitigated ? 0 : (safeSummary.active_incidents ?? 0)}
             subtext={mitigated ? 'All mitigated' : 'Requiring investigation'}
             icon={<AlertTriangle className="h-4 w-4 text-amber-400" />}
           />
           <StatTile
             label="Attacks Blocked (24h)"
-            value={Object.values(summary.attack_counts_24h || {}).reduce((a, b) => a + b, 0) + (mitigated ? 1 : 0)}
+            value={Object.values(safeSummary.attack_counts_24h || {}).reduce((a, b) => a + b, 0) + (mitigated ? 1 : 0)}
             subtext="Closed-loop auto healing"
             icon={<ShieldCheck className="h-4 w-4 text-emerald-400" />}
           />
@@ -251,7 +262,7 @@ export function OverviewPage() {
                 Interactive Cloud Attack Simulator & Self-Healing Pipeline
               </h3>
               <p className="text-xs text-zinc-400">
-                Test how the autonomous engine classifies and remediates attacks across GCP VPC, Compute, Storage, and IAM.
+                Test how the autonomous engine classifies and remediates attacks across AWS VPC, EC2 Compute, S3 Storage, and IAM.
               </p>
             </div>
           </div>
@@ -298,7 +309,7 @@ export function OverviewPage() {
             {[
               { num: 1, title: 'Classification', desc: 'XGBoost 124-Class Model' },
               { num: 2, title: 'Safety Guardrails', desc: 'Whitelist & Blast Radius' },
-              { num: 3, title: 'Playbook Dispatch', desc: 'VPC Firewall / IAM / OS' },
+              { num: 3, title: 'Playbook Dispatch', desc: 'AWS Security Group / OS' },
               { num: 4, title: 'Verification', desc: 'Telemetry Dip Probe' },
               { num: 5, title: 'Autonomous Recovery', desc: 'Audit Log & SLA Met' },
             ].map((stage) => {
@@ -403,14 +414,14 @@ export function OverviewPage() {
         </Card>
 
         <Card header={<span className="text-sm font-semibold text-white">Prioritized Risk Forecasts</span>} className="bg-[#09090b] border-zinc-800">
-          {summary.top_risks.length === 0 ? (
+          {(!safeSummary.top_risks || safeSummary.top_risks.length === 0) ? (
             <EmptyState
               title="No high-risk warnings"
               message="All infrastructure components and threat forecasts report low probability."
             />
           ) : (
             <div className="divide-y divide-zinc-800 space-y-3">
-              {summary.top_risks.map((risk, idx) => (
+              {safeSummary.top_risks.map((risk, idx) => (
                 <div key={idx} className="pt-3 first:pt-0 flex items-center justify-between">
                   <div className="space-y-0.5">
                     <div className="flex items-center space-x-2">

@@ -17,6 +17,14 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
+      '/api/v1/incidents': {
+        target: 'http://127.0.0.1:8001',
+        changeOrigin: true,
+      },
+      '/incidents': {
+        target: 'http://127.0.0.1:8001',
+        changeOrigin: true,
+      },
       // Proxy API calls to the FastAPI backend in dev
       '/api': {
         target: 'http://localhost:8000',

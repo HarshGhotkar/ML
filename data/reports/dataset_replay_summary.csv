@@ -1,0 +1,8 @@
+Incident ID,Family,MITRE Technique,Confidence,Status,Source,Repeat Count,Probable Root Cause
+inc-ds-001,ddos,T1498 (SYN Flood),0.99,recorded,dataset_replay,10,Hypothesized Root Cause: Uncompleted TCP 3-way handshakes exhausting OS SYN backlog queue.
+inc-ds-044,brute_force,T1110 (SSH Brute Force),0.99,recorded,dataset_replay,5,Hypothesized Root Cause: Automated SSH dictionary attack against port 22 attempting credential guessing.
+inc-ds-064,port_scan,T1046 (Network Service Scanning),0.9,recorded,dataset_replay,5,Hypothesized Root Cause: High-speed stealth SYN sweep probing open ports without completing handshake.
+inc-ds-088,web_attack,T1190 (SQL Injection),0.99,recorded,dataset_replay,5,Hypothesized Root Cause: Unsanitized SQL payload in parameters attempting database extraction.
+inc-ds-164,privilege_escalation,T1003.001 (LSASS Memory Dump),0.99,recorded,dataset_replay,1,Hypothesized Root Cause: Attacker attaching AdministratorAccess or roles/owner to own identity.
+inc-ds-165,privilege_escalation,T1003.001 (LSASS Memory Dump),0.99,recorded,dataset_replay,1,Hypothesized Root Cause: Pivoting through chained cross-account roles to acquire root permissions.
+inc-ds-167,brute_force,T1110 (SSH Brute Force),0.87,recorded,dataset_replay,1,Hypothesized Root Cause: Stealing short-lived IAM credentials via SSRF to 169.254.169.254.

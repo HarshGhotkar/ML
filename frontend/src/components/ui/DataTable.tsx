@@ -15,6 +15,7 @@ export interface Column<T> {
 export interface DataTableProps<T> {
   columns: Column<T>[];
   data: T[];
+  isLoading?: boolean;
   searchKey?: keyof T | string;
   searchColumn?: keyof T | string;
   searchPlaceholder?: string;

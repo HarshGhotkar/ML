@@ -31,7 +31,7 @@ export function TopBar() {
               <div className="flex justify-end mt-0.5">
                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-white text-black">
                   <Shield className="h-2.5 w-2.5 mr-1" />
-                  {user.role.toUpperCase()}
+                  {((user && user.role) ? user.role : 'ADMIN').toUpperCase()}
                 </span>
               </div>
             </div>

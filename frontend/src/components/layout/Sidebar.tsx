@@ -66,8 +66,12 @@ export function Sidebar() {
       {/* Footer Info */}
       <div className="p-4 border-t border-[#27272a] bg-[#09090b]">
         <div className="flex items-center justify-between text-[11px] text-zinc-400 font-mono">
-          <span>GCP Project</span>
-          <span className="text-white font-semibold">adaptive-learning-ml</span>
+          <span>AWS Region</span>
+          <span className="text-white font-semibold">ap-south-1</span>
+        </div>
+        <div className="flex items-center justify-between text-[11px] text-zinc-400 font-mono mt-1">
+          <span>EC2 Core Node</span>
+          <span className="text-white font-semibold">i-098c54730ff60bf4a</span>
         </div>
         <div className="flex items-center justify-between text-[11px] text-zinc-400 font-mono mt-1">
           <span>Shield Mode</span>

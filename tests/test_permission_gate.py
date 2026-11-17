@@ -55,7 +55,12 @@ class TestPermissionGate(unittest.TestCase):
         }
 
     def tearDown(self) -> None:
-        self.tmp_dir.cleanup()
+        import gc
+        gc.collect()
+        try:
+            self.tmp_dir.cleanup()
+        except Exception:
+            pass
 
     def test_no_execution_while_awaiting_approval(self) -> None:
         """In awaiting_approval state, execution_log must remain empty."""

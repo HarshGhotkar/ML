@@ -1,0 +1,610 @@
+{
+  "summary": {
+    "generated_at": "2026-11-17T08:17:37.809003+00:00",
+    "total_records_processed": 40,
+    "unique_incidents_recorded": 7,
+    "average_confidence": 0.96,
+    "attacks_per_family": {
+      "ddos": 1,
+      "brute_force": 2,
+      "port_scan": 1,
+      "web_attack": 1,
+      "privilege_escalation": 2
+    },
+    "top_root_causes": {
+      "Hypothesized Root Cause: Authentication endpoint (SSH, RDP, SMB, Web Login) exposed directly to untrusted WAN without rate-limiting.": 2,
+      "Hypothesized Root Cause: Exploitation of unquoted service path, weak service ACLs, or vulnerable driver.": 2,
+      "Hypothesized Root Cause: Volumetric packet flood assaulting ingress gateway without edge rate-limiting.": 1,
+      "Hypothesized Root Cause: External adversary probing perimeter hosts for exposed services and unpatched vulnerabilities.": 1,
+      "Hypothesized Root Cause: Unsanitized user inputs vulnerable to SQLi, XSS, or Command Injection.": 1
+    },
+    "most_common_recommended_actions": {
+      "Host Firewall Dynamic Inbound Block": 2,
+      "Temporary Target Account Lockout": 2,
+      "Terminate Injector Process": 2,
+      "Google Cloud Armor Edge Rate-Limiting": 1,
+      "Host Ingress Socket Throttling": 1
+    }
+  },
+  "records": [
+    {
+      "incident_id": "inc-ds-001",
+      "timestamp": "2026-11-17T08:17:37.719229+00:00",
+      "source": "dataset_replay",
+      "host_id": "DATASET-WORKSTATION-1",
+      "attack_name": "SYN Flood",
+      "category": "DoS",
+      "mitre_technique": "T1498",
+      "features": {
+        "cpu": 83.3,
+        "ram": 35.4,
+        "failed_logins": 0,
+        "inbound_traffic": 20570.0,
+        "active_connections": 172
+      },
+      "tier1_family": "ddos",
+      "tier1_confidence": 0.99,
+      "tier2_technique": "T1498 (SYN Flood)",
+      "tier2_confidence": 0.96,
+      "rca": {
+        "summary": "Observed telemetry (inbound_traffic_surge) confirms SYN Flood. Hypothesized Root Cause: Uncompleted TCP 3-way handshakes exhausting OS SYN backlog queue.",
+        "probable_root_cause": "Hypothesized Root Cause: Uncompleted TCP 3-way handshakes exhausting OS SYN backlog queue.",
+        "primary_telemetry_signal": "inbound_traffic_surge",
+        "evidence": [
+          "inbound_traffic surged to 20570.0 pkts/s (171.4x baseline), overwhelming ingress buffers.",
+          "active_connections escalated to 172 (6.9x baseline), consistent with connection state exhaustion.",
+          "Host CPU rose to 83.3% under packet interrupt pressure."
+        ],
+        "confidence": 0.99,
+        "alternative_hypotheses": [
+          "Unscheduled organic traffic surge (flash crowd) following marketing campaign",
+          "Upstream ISP routing anomaly or BGP route leak reflecting legitimate traffic",
+          "Large bulk database sync or automated offsite file backup transfer"
+        ],
+        "uncertainty_note": "Tier 2 technique 'T1498 (SYN Flood)' classified with 96.0% confidence. All findings represent probabilistic hypotheses and require human operational review before destructive actions."
+      },
+      "self_healing": {
+        "playbook_id": "ACT_GCP_ARMOR_RATE_LIMIT",
+        "playbook_name": "Cloud Armor Edge SYN Rate-Limiting & Ingress Drop",
+        "risk_level": "low",
+        "reversible": true,
+        "target_layer": "dos",
+        "status": "ready_for_review"
+      },
+      "recommended_actions": [
+        {
+          "action_id": "ACT_GCP_ARMOR_RATE_LIMIT",
+          "name": "Google Cloud Armor Edge Rate-Limiting",
+          "description": "Deploy rate-based ban rule on Google Cloud Armor security policy at global edge",
+          "risk_level": "low",
+          "reversible": true,
+          "rollback_steps": "Delete or disable rate-limit rule in Cloud Armor security policy",
+          "expected_outcome": "Attacking botnet packets dropped at edge POPs before entering VPC network",
+          "scope": "DATASET-REPLAY-1 (Target Layer: ddos)",
+          "target_host": "DATASET-REPLAY-1",
+          "target_ip": "198.51.100.238"
+        },
+        {
+          "action_id": "ACT_HOST_SYN_RATE_LIMIT",
+          "name": "Host Ingress Socket Throttling",
+          "description": "Apply SYN flood protection and connection threshold limits on host network adapter",
+          "risk_level": "low",
+          "reversible": true,
+          "rollback_steps": "Reset TCP SynAttackProtect registry / sysctl parameters to baseline",
+          "expected_outcome": "State table exhaustion mitigated; legitimate connection latency normalized",
+          "scope": "DATASET-REPLAY-1 (Target Layer: ddos)",
+          "target_host": "DATASET-REPLAY-1",
+          "target_ip": "198.51.100.238"
+        }
+      ],
+      "status": "recorded",
+      "approval": {
+        "decided_by": "System (Historical Dataset)",
+        "decision": "archived",
+        "decided_at": "2026-11-17T08:17:37.719272+00:00",
+        "comment": "Dataset replay record for SYN Flood. Stored permanently for training and offline compliance audit."
+      },
+      "execution_log": [],
+      "verification_result": null,
+      "outcome_summary": "Historical attack 'SYN Flood' classified and permanently recorded in audit store.",
+      "repeat_count": 10,
+      "sample_attack_names": [
+        "SYN Flood",
+        "UDP Flood",
+        "ICMP (Ping) Flood",
+        "ACK Flood",
+        "RST Flood",
+        "DNS Amplification",
+        "NTP Amplification",
+        "SSDP Reflection",
+        "Memcached Amplification",
+        "CLDAP Reflection"
+      ]
+    },
+    {
+      "incident_id": "inc-ds-044",
+      "timestamp": "2026-11-17T08:17:37.736494+00:00",
+      "source": "dataset_replay",
+      "host_id": "DATASET-WORKSTATION-44",
+      "attack_name": "SSH Brute Force",
+      "category": "Brute Force / Credential",
+      "mitre_technique": "T1110",
+      "features": {
+        "cpu": 15.5,
+        "ram": 39.0,
+        "failed_logins": 120,
+        "inbound_traffic": 97.3,
+        "active_connections": 72
+      },
+      "tier1_family": "brute_force",
+      "tier1_confidence": 0.99,
+      "tier2_technique": "T1110 (SSH Brute Force)",
+      "tier2_confidence": 0.96,
+      "rca": {
+        "summary": "Observed telemetry (failed_logins_spike) confirms SSH Brute Force. Hypothesized Root Cause: Automated SSH dictionary attack against port 22 attempting credential guessing.",
+        "probable_root_cause": "Hypothesized Root Cause: Automated SSH dictionary attack against port 22 attempting credential guessing.",
+        "primary_telemetry_signal": "failed_logins_spike",
+        "evidence": [
+          "failed_logins reached 120 bursts (120.0 (baseline: 0)) on host DATASET-REPLAY-44.",
+          "active_connections elevated to 72 (2.9x baseline), indicating concurrent credential spray threads.",
+          "Inbound authentication handshake source identified as 198.51.100.119."
+        ],
+        "confidence": 0.99,
+        "alternative_hypotheses": [
+          "Misconfigured administrative automation script or scheduled task with expired credentials",
+          "Legitimate user experiencing keyboard mapping issue or repeated password typos",
+          "Internal vulnerability scan conducted by authorized SecOps audit team"
+        ],
+        "uncertainty_note": "Tier 2 technique 'T1110 (SSH Brute Force)' classified with 96.0% confidence. All findings represent probabilistic hypotheses and require human operational review before destructive actions."
+      },
+      "self_healing": {
+        "playbook_id": "ACT_BLOCK_SOURCE_IP",
+        "playbook_name": "Host Firewall Dynamic Inbound Block & Port 22 Restriction",
+        "risk_level": "low",
+        "reversible": true,
+        "target_layer": "brute_force",
+        "status": "ready_for_review"
+      },
+      "recommended_actions": [
+        {
+          "action_id": "ACT_BLOCK_SOURCE_IP",
+          "name": "Host Firewall Dynamic Inbound Block",
+          "description": "Block inbound traffic from offending remote IP via host firewall rule for 60 minutes",
+          "risk_level": "low",
+          "reversible": true,
+          "rollback_steps": "Remove dynamic block rule from host firewall adapter",
+          "expected_outcome": "Immediate termination of incoming authentication attempts from source IP",
+          "scope": "DATASET-REPLAY-44 (Target Layer: brute_force)",
+          "target_host": "DATASET-REPLAY-44",
+          "target_ip": "198.51.100.119"
+        },
+        {
+          "action_id": "ACT_LOCKOUT_ACCOUNT_TEMP",
+          "name": "Temporary Target Account Lockout",
+          "description": "Apply temporary 15-minute security lock on targeted user account to prevent compromise",
+          "risk_level": "medium",
+          "reversible": true,
+          "rollback_steps": "Unlock target account via admin identity provider or net user command",
+          "expected_outcome": "Adversary dictionary attacks blocked even if correct password is found",
+          "scope": "DATASET-REPLAY-44 (Target Layer: brute_force)",
+          "target_host": "DATASET-REPLAY-44",
+          "target_ip": "198.51.100.119"
+        }
+      ],
+      "status": "recorded",
+      "approval": {
+        "decided_by": "System (Historical Dataset)",
+        "decision": "archived",
+        "decided_at": "2026-11-17T08:17:37.736525+00:00",
+        "comment": "Dataset replay record for SSH Brute Force. Stored permanently for training and offline compliance audit."
+      },
+      "execution_log": [],
+      "verification_result": null,
+      "outcome_summary": "Historical attack 'SSH Brute Force' classified and permanently recorded in audit store.",
+      "repeat_count": 5,
+      "sample_attack_names": [
+        "SSH Brute Force",
+        "FTP Brute Force",
+        "RDP Brute Force",
+        "SMB Brute Force",
+        "Telnet Brute Force"
+      ]
+    },
+    {
+      "incident_id": "inc-ds-064",
+      "timestamp": "2026-11-17T08:17:37.747945+00:00",
+      "source": "dataset_replay",
+      "host_id": "DATASET-WORKSTATION-64",
+      "attack_name": "TCP SYN (Half-Open) Scan",
+      "category": "Recon / Scan",
+      "mitre_technique": "T1046",
+      "features": {
+        "cpu": 13.5,
+        "ram": 37.4,
+        "failed_logins": 0,
+        "inbound_traffic": 300.1,
+        "active_connections": 199
+      },
+      "tier1_family": "port_scan",
+      "tier1_confidence": 0.9,
+      "tier2_technique": "T1046 (Network Service Scanning)",
+      "tier2_confidence": 0.85,
+      "rca": {
+        "summary": "Observed telemetry (active_connections_churn) confirms TCP SYN (Half-Open) Scan. Hypothesized Root Cause: High-speed stealth SYN sweep probing open ports without completing handshake.",
+        "probable_root_cause": "Hypothesized Root Cause: High-speed stealth SYN sweep probing open ports without completing handshake.",
+        "primary_telemetry_signal": "active_connections_churn",
+        "evidence": [
+          "active_connections rapid-turnover rate reached 199 (8.0x baseline) across consecutive destination ports.",
+          "inbound_traffic recorded at 300.1 pkts/s with small average packet size (<64 bytes) typical of SYN reconnaissance."
+        ],
+        "confidence": 0.9,
+        "alternative_hypotheses": [
+          "Scheduled enterprise vulnerability assessment scanner (e.g., Nessus, Qualys, OpenVAS)",
+          "Network asset inventory discovery tool mapping LAN hardware",
+          "Transient network socket churn from rapid microservice restarts"
+        ],
+        "uncertainty_note": "Tier 2 technique 'T1046 (Network Service Scanning)' classified with 85.0% confidence. All findings represent probabilistic hypotheses and require human operational review before destructive actions."
+      },
+      "self_healing": {
+        "playbook_id": "ACT_DROP_SCANNER_IP",
+        "playbook_name": "Dynamic Scanner IP Null-Route & Host Stealth Mode",
+        "risk_level": "low",
+        "reversible": true,
+        "target_layer": "port_scan_recon",
+        "status": "ready_for_review"
+      },
+      "recommended_actions": [
+        {
+          "action_id": "ACT_DROP_SCANNER_IP",
+          "name": "Drop Scanner Source IP",
+          "description": "Inject dynamic firewall drop rule for scanning source IP for 30 minutes",
+          "risk_level": "low",
+          "reversible": true,
+          "rollback_steps": "Remove drop rule from local firewall table",
+          "expected_outcome": "Scanning attempts silently dropped, denying port state intelligence to adversary",
+          "scope": "DATASET-REPLAY-64 (Target Layer: port_scan)",
+          "target_host": "DATASET-REPLAY-64",
+          "target_ip": "198.51.100.55"
+        }
+      ],
+      "status": "recorded",
+      "approval": {
+        "decided_by": "System (Historical Dataset)",
+        "decision": "archived",
+        "decided_at": "2026-11-17T08:17:37.747969+00:00",
+        "comment": "Dataset replay record for TCP SYN (Half-Open) Scan. Stored permanently for training and offline compliance audit."
+      },
+      "execution_log": [],
+      "verification_result": null,
+      "outcome_summary": "Historical attack 'TCP SYN (Half-Open) Scan' classified and permanently recorded in audit store.",
+      "repeat_count": 5,
+      "sample_attack_names": [
+        "TCP SYN (Half-Open) Scan",
+        "TCP Connect Scan",
+        "FIN Scan",
+        "NULL Scan",
+        "Xmas Scan"
+      ]
+    },
+    {
+      "incident_id": "inc-ds-088",
+      "timestamp": "2026-11-17T08:17:37.761320+00:00",
+      "source": "dataset_replay",
+      "host_id": "DATASET-WORKSTATION-88",
+      "attack_name": "SQL Injection",
+      "category": "Web / Exploit",
+      "mitre_technique": "T1190",
+      "features": {
+        "cpu": 11.5,
+        "ram": 44.9,
+        "failed_logins": 0,
+        "inbound_traffic": 648.8,
+        "active_connections": 83,
+        "sqli_signature": true
+      },
+      "tier1_family": "web_attack",
+      "tier1_confidence": 0.99,
+      "tier2_technique": "T1190 (SQL Injection)",
+      "tier2_confidence": 0.96,
+      "rca": {
+        "summary": "Observed telemetry (waf_signature_match) confirms SQL Injection. Hypothesized Root Cause: Unsanitized SQL payload in parameters attempting database extraction.",
+        "probable_root_cause": "Hypothesized Root Cause: Unsanitized SQL payload in parameters attempting database extraction.",
+        "primary_telemetry_signal": "waf_signature_match",
+        "evidence": [
+          "inbound_traffic pattern (648.8 pkts/s) accompanied by non-standard URI parameter payloads.",
+          "active_connections elevated to 83 (3.3x baseline) targeting web application routes."
+        ],
+        "confidence": 0.99,
+        "alternative_hypotheses": [
+          "Automated search engine crawler indexing web application endpoints",
+          "Authorized dynamic application security testing (DAST) scan",
+          "Client frontend retry storm caused by transient gateway error"
+        ],
+        "uncertainty_note": "Tier 2 technique 'T1190 (SQL Injection)' classified with 96.0% confidence. All findings represent probabilistic hypotheses and require human operational review before destructive actions."
+      },
+      "self_healing": {
+        "playbook_id": "ACT_WAF_INJECT_RULE",
+        "playbook_name": "Inject Cloud Armor SQLi Filter Rule & Block Client IP",
+        "risk_level": "low",
+        "reversible": true,
+        "target_layer": "web_attack",
+        "status": "ready_for_review"
+      },
+      "recommended_actions": [
+        {
+          "action_id": "ACT_WAF_INJECT_RULE",
+          "name": "Deploy Web Application Firewall Rule",
+          "description": "Inject request filter blocking specific exploit payload signature (SSRF/SQLi)",
+          "risk_level": "low",
+          "reversible": true,
+          "rollback_steps": "Remove signature filter from WAF / reverse proxy configuration",
+          "expected_outcome": "Immediate neutralization of exploitation payload without taking site offline",
+          "scope": "DATASET-REPLAY-88 (Target Layer: web_attack)",
+          "target_host": "DATASET-REPLAY-88",
+          "target_ip": "198.51.100.118"
+        },
+        {
+          "action_id": "ACT_BLOCK_CLIENT_SESSION",
+          "name": "Invalidate Attacking Client Session & Block IP",
+          "description": "Revoke attacker session cookie and block IP at reverse proxy gateway",
+          "risk_level": "low",
+          "reversible": true,
+          "rollback_steps": "Remove IP from reverse proxy blocklist",
+          "expected_outcome": "Attacker denied further interaction with application layer",
+          "scope": "DATASET-REPLAY-88 (Target Layer: web_attack)",
+          "target_host": "DATASET-REPLAY-88",
+          "target_ip": "198.51.100.118"
+        }
+      ],
+      "status": "recorded",
+      "approval": {
+        "decided_by": "System (Historical Dataset)",
+        "decision": "archived",
+        "decided_at": "2026-11-17T08:17:37.761347+00:00",
+        "comment": "Dataset replay record for SQL Injection. Stored permanently for training and offline compliance audit."
+      },
+      "execution_log": [],
+      "verification_result": null,
+      "outcome_summary": "Historical attack 'SQL Injection' classified and permanently recorded in audit store.",
+      "repeat_count": 5,
+      "sample_attack_names": [
+        "SQL Injection",
+        "Blind SQL Injection",
+        "NoSQL Injection",
+        "Reflected XSS",
+        "Stored XSS"
+      ]
+    },
+    {
+      "incident_id": "inc-ds-164",
+      "timestamp": "2026-11-17T08:17:37.773722+00:00",
+      "source": "dataset_replay",
+      "host_id": "DATASET-WORKSTATION-164",
+      "attack_name": "IAM Privilege Escalation via Policy Attachment",
+      "category": "Cloud (control plane)",
+      "mitre_technique": "T1098",
+      "features": {
+        "cpu": 53.6,
+        "ram": 49.8,
+        "failed_logins": 0,
+        "inbound_traffic": 98.6,
+        "active_connections": 29,
+        "lsass_probe": true
+      },
+      "tier1_family": "privilege_escalation",
+      "tier1_confidence": 0.99,
+      "tier2_technique": "T1003.001 (LSASS Memory Dump)",
+      "tier2_confidence": 0.94,
+      "rca": {
+        "summary": "Observed telemetry (iam_policy_modification) confirms IAM Privilege Escalation via Policy Attachment. Hypothesized Root Cause: Attacker attaching AdministratorAccess or roles/owner to own identity.",
+        "probable_root_cause": "Hypothesized Root Cause: Attacker attaching AdministratorAccess or roles/owner to own identity.",
+        "primary_telemetry_signal": "iam_policy_modification",
+        "evidence": [
+          "Host CPU spiked to 53.6% (3.6x baseline) during local process token manipulation / memory handle acquisition.",
+          "Authentication subsystem logged abnormal token privilege escalation on DATASET-REPLAY-164."
+        ],
+        "confidence": 0.99,
+        "alternative_hypotheses": [
+          "Legitimate system diagnostic utility or debugger attached by system administrator",
+          "Enterprise endpoint security agent (EDR) conducting deep memory integrity inspection",
+          "Administrative software patch installation altering local services"
+        ],
+        "uncertainty_note": "Tier 2 technique 'T1003.001 (LSASS Memory Dump)' classified with 94.0% confidence. All findings represent probabilistic hypotheses and require human operational review before destructive actions."
+      },
+      "self_healing": {
+        "playbook_id": "ACT_REVOKE_SA_KEY",
+        "playbook_name": "Strip Unauthorized IAM Role Binding & Revoke Service Account Key",
+        "risk_level": "high",
+        "reversible": false,
+        "target_layer": "exploit_other",
+        "status": "ready_for_review"
+      },
+      "recommended_actions": [
+        {
+          "action_id": "ACT_TERMINATE_EXPLOIT_PID",
+          "name": "Terminate Injector Process",
+          "description": "Terminate non-system process attempting unauthorized memory handle acquisition",
+          "risk_level": "high",
+          "reversible": false,
+          "rollback_steps": "Manually restart application if identified as false positive",
+          "expected_outcome": "Prevents extraction of plaintext passwords and NTLM password hashes",
+          "scope": "DATASET-REPLAY-164 (Target Layer: privilege_escalation)",
+          "target_host": "DATASET-REPLAY-164",
+          "target_ip": "198.51.100.188"
+        }
+      ],
+      "status": "recorded",
+      "approval": {
+        "decided_by": "System (Historical Dataset)",
+        "decision": "archived",
+        "decided_at": "2026-11-17T08:17:37.773749+00:00",
+        "comment": "Dataset replay record for IAM Privilege Escalation via Policy Attachment. Stored permanently for training and offline compliance audit."
+      },
+      "execution_log": [],
+      "verification_result": null,
+      "outcome_summary": "Historical attack 'IAM Privilege Escalation via Policy Attachment' classified and permanently recorded in audit store.",
+      "repeat_count": 1,
+      "sample_attack_names": [
+        "IAM Privilege Escalation via Policy Attachment"
+      ]
+    },
+    {
+      "incident_id": "inc-ds-165",
+      "timestamp": "2026-11-17T08:17:37.785281+00:00",
+      "source": "dataset_replay",
+      "host_id": "DATASET-WORKSTATION-165",
+      "attack_name": "AssumeRole / Role-Chaining Abuse",
+      "category": "Cloud (control plane)",
+      "mitre_technique": "T1078.004",
+      "features": {
+        "cpu": 49.6,
+        "ram": 49.9,
+        "failed_logins": 0,
+        "inbound_traffic": 118.9,
+        "active_connections": 30,
+        "lsass_probe": true
+      },
+      "tier1_family": "privilege_escalation",
+      "tier1_confidence": 0.99,
+      "tier2_technique": "T1003.001 (LSASS Memory Dump)",
+      "tier2_confidence": 0.94,
+      "rca": {
+        "summary": "Observed telemetry (unauthorized_cloud_api_call) confirms AssumeRole / Role-Chaining Abuse. Hypothesized Root Cause: Pivoting through chained cross-account roles to acquire root permissions.",
+        "probable_root_cause": "Hypothesized Root Cause: Pivoting through chained cross-account roles to acquire root permissions.",
+        "primary_telemetry_signal": "unauthorized_cloud_api_call",
+        "evidence": [
+          "Host CPU spiked to 49.6% (3.3x baseline) during local process token manipulation / memory handle acquisition.",
+          "Authentication subsystem logged abnormal token privilege escalation on DATASET-REPLAY-165."
+        ],
+        "confidence": 0.99,
+        "alternative_hypotheses": [
+          "Legitimate system diagnostic utility or debugger attached by system administrator",
+          "Enterprise endpoint security agent (EDR) conducting deep memory integrity inspection",
+          "Administrative software patch installation altering local services"
+        ],
+        "uncertainty_note": "Tier 2 technique 'T1003.001 (LSASS Memory Dump)' classified with 94.0% confidence. All findings represent probabilistic hypotheses and require human operational review before destructive actions."
+      },
+      "self_healing": {
+        "playbook_id": "ACT_REVOKE_SA_KEY",
+        "playbook_name": "Revoke AssumeRole Trust Policy & Invalidate Active STS Session",
+        "risk_level": "high",
+        "reversible": false,
+        "target_layer": "exploit_other",
+        "status": "ready_for_review"
+      },
+      "recommended_actions": [
+        {
+          "action_id": "ACT_TERMINATE_EXPLOIT_PID",
+          "name": "Terminate Injector Process",
+          "description": "Terminate non-system process attempting unauthorized memory handle acquisition",
+          "risk_level": "high",
+          "reversible": false,
+          "rollback_steps": "Manually restart application if identified as false positive",
+          "expected_outcome": "Prevents extraction of plaintext passwords and NTLM password hashes",
+          "scope": "DATASET-REPLAY-165 (Target Layer: privilege_escalation)",
+          "target_host": "DATASET-REPLAY-165",
+          "target_ip": "198.51.100.85"
+        }
+      ],
+      "status": "recorded",
+      "approval": {
+        "decided_by": "System (Historical Dataset)",
+        "decision": "archived",
+        "decided_at": "2026-11-17T08:17:37.785320+00:00",
+        "comment": "Dataset replay record for AssumeRole / Role-Chaining Abuse. Stored permanently for training and offline compliance audit."
+      },
+      "execution_log": [],
+      "verification_result": null,
+      "outcome_summary": "Historical attack 'AssumeRole / Role-Chaining Abuse' classified and permanently recorded in audit store.",
+      "repeat_count": 1,
+      "sample_attack_names": [
+        "AssumeRole / Role-Chaining Abuse"
+      ]
+    },
+    {
+      "incident_id": "inc-ds-167",
+      "timestamp": "2026-11-17T08:17:37.797288+00:00",
+      "source": "dataset_replay",
+      "host_id": "DATASET-WORKSTATION-167",
+      "attack_name": "Instance Metadata Credential Theft (SSRF to IMDS)",
+      "category": "Cloud (control plane)",
+      "mitre_technique": "T1552.005",
+      "features": {
+        "cpu": 19.0,
+        "ram": 35.9,
+        "failed_logins": 32,
+        "inbound_traffic": 120.9,
+        "active_connections": 67
+      },
+      "tier1_family": "brute_force",
+      "tier1_confidence": 0.87,
+      "tier2_technique": "T1110 (SSH Brute Force)",
+      "tier2_confidence": 0.84,
+      "rca": {
+        "summary": "Observed telemetry (imds_http_request) confirms Instance Metadata Credential Theft (SSRF to IMDS). Hypothesized Root Cause: Stealing short-lived IAM credentials via SSRF to 169.254.169.254.",
+        "probable_root_cause": "Hypothesized Root Cause: Stealing short-lived IAM credentials via SSRF to 169.254.169.254.",
+        "primary_telemetry_signal": "imds_http_request",
+        "evidence": [
+          "failed_logins reached 32 bursts (32.0 (baseline: 0)) on host DATASET-REPLAY-167.",
+          "active_connections elevated to 67 (2.7x baseline), indicating concurrent credential spray threads.",
+          "Inbound authentication handshake source identified as 198.51.100.30."
+        ],
+        "confidence": 0.87,
+        "alternative_hypotheses": [
+          "Misconfigured administrative automation script or scheduled task with expired credentials",
+          "Legitimate user experiencing keyboard mapping issue or repeated password typos",
+          "Internal vulnerability scan conducted by authorized SecOps audit team"
+        ],
+        "uncertainty_note": "Tier 2 technique 'T1110 (SSH Brute Force)' classified with 84.0% confidence. All findings represent probabilistic hypotheses and require human operational review before destructive actions."
+      },
+      "self_healing": {
+        "playbook_id": "ACT_REVOKE_SA_KEY",
+        "playbook_name": "Invalidate Stolen IMDS Session Tokens & Mandate IMDSv2 Token",
+        "risk_level": "high",
+        "reversible": false,
+        "target_layer": "exploit_other",
+        "status": "ready_for_review"
+      },
+      "recommended_actions": [
+        {
+          "action_id": "ACT_BLOCK_SOURCE_IP",
+          "name": "Host Firewall Dynamic Inbound Block",
+          "description": "Block inbound traffic from offending remote IP via host firewall rule for 60 minutes",
+          "risk_level": "low",
+          "reversible": true,
+          "rollback_steps": "Remove dynamic block rule from host firewall adapter",
+          "expected_outcome": "Immediate termination of incoming authentication attempts from source IP",
+          "scope": "DATASET-REPLAY-167 (Target Layer: brute_force)",
+          "target_host": "DATASET-REPLAY-167",
+          "target_ip": "198.51.100.30"
+        },
+        {
+          "action_id": "ACT_LOCKOUT_ACCOUNT_TEMP",
+          "name": "Temporary Target Account Lockout",
+          "description": "Apply temporary 15-minute security lock on targeted user account to prevent compromise",
+          "risk_level": "medium",
+          "reversible": true,
+          "rollback_steps": "Unlock target account via admin identity provider or net user command",
+          "expected_outcome": "Adversary dictionary attacks blocked even if correct password is found",
+          "scope": "DATASET-REPLAY-167 (Target Layer: brute_force)",
+          "target_host": "DATASET-REPLAY-167",
+          "target_ip": "198.51.100.30"
+        }
+      ],
+      "status": "recorded",
+      "approval": {
+        "decided_by": "System (Historical Dataset)",
+        "decision": "archived",
+        "decided_at": "2026-11-17T08:17:37.797314+00:00",
+        "comment": "Dataset replay record for Instance Metadata Credential Theft (SSRF to IMDS). Stored permanently for training and offline compliance audit."
+      },
+      "execution_log": [],
+      "verification_result": null,
+      "outcome_summary": "Historical attack 'Instance Metadata Credential Theft (SSRF to IMDS)' classified and permanently recorded in audit store.",
+      "repeat_count": 1,
+      "sample_attack_names": [
+        "Instance Metadata Credential Theft (SSRF to IMDS)"
+      ]
+    }
+  ]
+}
